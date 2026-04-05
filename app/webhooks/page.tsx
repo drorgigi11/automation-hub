@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Sidebar from '@/components/Sidebar'
-import { Copy, CheckCheck, ExternalLink } from 'lucide-react'
+import { Copy, CheckCheck } from 'lucide-react'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://your-domain.com'
 
