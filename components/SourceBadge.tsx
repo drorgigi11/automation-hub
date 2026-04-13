@@ -15,10 +15,14 @@ function getSourceInfo(source: LeadSource, rawData?: Record<string, unknown>) {
     if (utm.includes('google')) {
       return { label: 'Google', color: '#34D399', bg: 'rgba(52,211,153,0.12)' }
     }
-    if (utm.includes('instagram')) {
+    if (utm.includes('instagram') || utm === 'ig') {
       return { label: 'Instagram', color: '#FB923C', bg: 'rgba(251,146,60,0.12)' }
     }
-    return { label: 'Organic', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' }
+    // No utm_source but has campaign data → came from Facebook ad
+    if (!utm && rawData?.campaign_name) {
+      return { label: 'Facebook', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' }
+    }
+    return { label: 'Direct', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' }
   }
   return { label: source, color: 'var(--text-secondary)', bg: 'var(--surface)' }
 }
