@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
           event_name: mapping.event_name,
           event_time: Math.floor(Date.now() / 1000),
           event_id: crypto.randomUUID(),
-          action_source: 'crm',
+          action_source: 'system_generated',
           user_data,
           custom_data: {
             value: mapping.value,
