@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 
 export const metadata: Metadata = {
   title: 'Renovision Design and Build',
@@ -7,8 +8,27 @@ export const metadata: Metadata = {
 
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
+    <>
+      {/* Facebook Pixel */}
+      <Script id="fb-pixel" strategy="afterInteractive">{`
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '626988439937509');
+        fbq('track', 'PageView');
+      `}</Script>
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <div className="renovision-theme">
       <style>{`
+        * { font-family: 'Poppins', system-ui, sans-serif !important; }
         .renovision-theme {
           --rv-bg: hsl(30, 20%, 98%);
           --rv-card: hsl(165, 45%, 25%);
@@ -23,7 +43,6 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
           background: var(--rv-bg);
           min-height: 100vh;
         }
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         .rv-slide-up { animation: rvSlideUp 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
         .rv-slide-down { animation: rvSlideDown 0.5s cubic-bezier(0.4,0,0.2,1) forwards; }
         .rv-fade-in { animation: rvFadeIn 0.4s ease-out forwards; }
@@ -68,5 +87,6 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
       `}</style>
       {children}
     </div>
+    </>
   )
 }

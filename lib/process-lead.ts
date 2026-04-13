@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-admin'
 import { Lead, LeadSource } from './supabase'
 import { appendLeadToSheet, ensureSheetHeaders } from './google-sheets'
+import { sendLeadEmail } from './send-lead-email'
 
 interface RawLead {
   name?: string
@@ -58,12 +59,8 @@ export async function processIncomingLead(
 
   if (connections && connections.length > 0) {
     for (const conn of connections) {
-      try {
-        await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
-        await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
-      } catch (err) {
-        console.error(`Failed to sync to sheet ${conn.sheet_id}:`, err)
-      }
+      await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
+      await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
     }
 
     // Mark as synced
@@ -73,6 +70,13 @@ export async function processIncomingLead(
       .eq('id', lead.id)
 
     lead.synced_to_sheets = true
+  }
+
+  // Send email notification
+  try {
+    await sendLeadEmail(lead)
+  } catch (err) {
+    console.error('Failed to send lead email:', err)
   }
 
   return lead

@@ -23,10 +23,16 @@ export async function POST(req: NextRequest) {
     // e.g. { fields: [{ id: "name", value: "John" }, ...] }
     if (Array.isArray(body.fields)) {
       const flat: Record<string, unknown> = {}
-      for (const field of body.fields as Array<{ id: string; value: unknown }>) {
-        flat[field.id] = field.value
+      for (const field of body.fields as Array<{ id: string; value: unknown; name?: string }>) {
+        flat[field.id ?? field.name ?? ''] = field.value
       }
       body = { ...body, ...flat }
+    }
+
+    // Fluent Forms sends data inside "data" object
+    // e.g. { data: { first_name: "John", email: "..." } }
+    if (body.data && typeof body.data === 'object' && !Array.isArray(body.data)) {
+      body = { ...body, ...(body.data as Record<string, unknown>) }
     }
 
     await processIncomingLead('elementor', body)
