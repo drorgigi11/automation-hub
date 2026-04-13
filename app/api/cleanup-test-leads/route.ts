@@ -31,7 +31,7 @@ async function getAccessToken(): Promise<string> {
 export async function GET(req: NextRequest) {
   // Simple auth check
   const secret = req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.WEBHOOK_SECRET) {
+  if (secret !== (process.env.WEBHOOK_SECRET ?? '').trim()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
