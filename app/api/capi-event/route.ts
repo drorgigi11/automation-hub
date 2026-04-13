@@ -21,7 +21,7 @@ function hashPhone(phone: string): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { secret, status, name, email, phone } = body
+    const { secret, status, name, email, phone, test_event_code } = body
 
     if (secret !== (process.env.WEBHOOK_SECRET ?? '').trim()) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
     const pixelId = process.env.FACEBOOK_PIXEL_ID
     const token = process.env.FACEBOOK_SYSTEM_USER_TOKEN
 
-    const payload = {
+    const payload: Record<string, unknown> = {
+      ...(test_event_code ? { test_event_code } : {}),
       data: [
         {
           event_name: mapping.event_name,
