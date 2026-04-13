@@ -173,7 +173,7 @@ export default function LeadsPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['מקור', 'שם', 'אימייל', 'טלפון', 'הודעה', 'סנכרון', 'תאריך'].map((h) => (
+                    {['מקור', 'סוג טופס', 'שם', 'אימייל', 'טלפון', 'הודעה', 'סנכרון', 'תאריך'].map((h) => (
                       <th
                         key={h}
                         style={{
@@ -203,7 +203,19 @@ export default function LeadsPage() {
                       }}
                     >
                       <td style={{ padding: '12px 16px' }}>
-                        <SourceBadge source={lead.source} />
+                        <SourceBadge source={lead.source} rawData={lead.raw_data as Record<string, unknown>} />
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '3px 10px',
+                          borderRadius: 20,
+                          fontSize: 12,
+                          background: 'var(--surface)',
+                          color: 'var(--text-secondary)',
+                        }}>
+                          {lead.source === 'facebook' ? 'Facebook Form' : lead.source === 'lovable' ? 'Landing Page' : 'Website Form'}
+                        </span>
                       </td>
                       <td style={{ padding: '12px 16px', fontSize: 14 }}>
                         {lead.name ?? <span style={{ color: 'var(--text-secondary)' }}>—</span>}

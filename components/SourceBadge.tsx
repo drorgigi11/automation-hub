@@ -1,17 +1,36 @@
 import { LeadSource } from '@/lib/supabase'
 
-const config: Record<LeadSource, { label: string; color: string; bg: string }> = {
-  facebook: { label: 'Facebook', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' },
-  elementor: { label: 'Elementor', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-  lovable: { label: 'Lovable', color: '#F472B6', bg: 'rgba(244,114,182,0.12)' },
+function getSourceInfo(source: LeadSource, rawData?: Record<string, unknown>) {
+  if (source === 'facebook') {
+    return { label: 'Facebook', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' }
+  }
+  if (source === 'elementor') {
+    return { label: 'Website', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' }
+  }
+  if (source === 'lovable') {
+    const utm = String(rawData?.utm_source ?? '').toLowerCase()
+    if (utm.includes('facebook') || utm === 'fb') {
+      return { label: 'Facebook', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' }
+    }
+    if (utm.includes('google')) {
+      return { label: 'Google', color: '#34D399', bg: 'rgba(52,211,153,0.12)' }
+    }
+    if (utm.includes('instagram')) {
+      return { label: 'Instagram', color: '#FB923C', bg: 'rgba(251,146,60,0.12)' }
+    }
+    return { label: 'Organic', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' }
+  }
+  return { label: source, color: 'var(--text-secondary)', bg: 'var(--surface)' }
 }
 
-export default function SourceBadge({ source }: { source: LeadSource }) {
-  const { label, color, bg } = config[source] ?? {
-    label: source,
-    color: 'var(--text-secondary)',
-    bg: 'var(--surface)',
-  }
+export default function SourceBadge({
+  source,
+  rawData,
+}: {
+  source: LeadSource
+  rawData?: Record<string, unknown>
+}) {
+  const { label, color, bg } = getSourceInfo(source, rawData)
   return (
     <span
       style={{
