@@ -58,18 +58,22 @@ export async function processIncomingLead(
     .contains('sources', [source])
 
   if (connections && connections.length > 0) {
-    for (const conn of connections) {
-      await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
-      await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
+    try {
+      for (const conn of connections) {
+        await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
+        await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
+      }
+
+      // Mark as synced
+      await supabaseAdmin
+        .from('leads')
+        .update({ synced_to_sheets: true })
+        .eq('id', lead.id)
+
+      lead.synced_to_sheets = true
+    } catch (err) {
+      console.error('Failed to sync lead to Google Sheets:', err)
     }
-
-    // Mark as synced
-    await supabaseAdmin
-      .from('leads')
-      .update({ synced_to_sheets: true })
-      .eq('id', lead.id)
-
-    lead.synced_to_sheets = true
   }
 
   // Send email notification
