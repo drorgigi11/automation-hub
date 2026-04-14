@@ -16,6 +16,8 @@ const phoneLink = 'tel:+14255324714'
 export default function ThankYou() {
   useEffect(() => {
     let tracked = false
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+
     const trackLead = () => {
       if (!tracked && typeof window.fbq === 'function') {
         window.fbq('track', 'Lead')
@@ -29,7 +31,6 @@ export default function ThankYou() {
     if (trackLead()) return
 
     const retryDelays = [100, 300, 500, 1000, 2000]
-    const timeouts: ReturnType<typeof setTimeout>[] = []
     retryDelays.forEach(delay => { timeouts.push(setTimeout(trackLead, delay)) })
     return () => timeouts.forEach(clearTimeout)
   }, [])
