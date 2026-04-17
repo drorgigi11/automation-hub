@@ -109,7 +109,11 @@ async function processWebhookBody(body: unknown) {
         await processIncomingLead('facebook', leadData)
       } catch (err) {
         console.error(`Failed to fetch lead ${leadgenId}:`, err)
-        await processIncomingLead('facebook', { leadgen_id: leadgenId, ...change.value })
+        try {
+          await processIncomingLead('facebook', { leadgen_id: leadgenId, ...change.value })
+        } catch (err2) {
+          console.error(`Fallback also failed for lead ${leadgenId}:`, err2)
+        }
       }
     }
   }

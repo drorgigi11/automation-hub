@@ -90,9 +90,37 @@ export async function appendLeadToSheet(
     String(zipCode),                 // Y: Zip Code
   ]
 
-  await sheets.spreadsheets.values.append({
+  // Get the numeric sheet ID for the tab (needed for insertDimension)
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId: sheetId })
+  const sheetTab = spreadsheet.data.sheets?.find(s => s.properties?.title === tabName)
+  if (!sheetTab) {
+    const available = spreadsheet.data.sheets?.map(s => s.properties?.title).join(', ')
+    throw new Error(`Tab "${tabName}" not found in spreadsheet. Available tabs: ${available}`)
+  }
+  const sheetGid = sheetTab.properties?.sheetId ?? 0
+
+  // Insert a blank row at position 2 (right after the header row)
+  await sheets.spreadsheets.batchUpdate({
     spreadsheetId: sheetId,
-    range: `${tabName}!A:Y`,
+    requestBody: {
+      requests: [{
+        insertDimension: {
+          range: {
+            sheetId: sheetGid,
+            dimension: 'ROWS',
+            startIndex: 1,
+            endIndex: 2,
+          },
+          inheritFromBefore: false,
+        }
+      }]
+    }
+  })
+
+  // Write the lead data into the newly inserted row 2
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `${tabName}!A2:Y2`,
     valueInputOption: 'USER_ENTERED',
     requestBody: { values: [row] },
   })

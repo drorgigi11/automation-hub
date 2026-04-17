@@ -13,6 +13,7 @@ interface RawLead {
   phone?: string
   phone_number?: string
   message?: string
+  leadgen_id?: string
   [key: string]: unknown
 }
 
@@ -34,8 +35,23 @@ function normalizeLead(raw: RawLead) {
 export async function processIncomingLead(
   source: LeadSource,
   rawData: RawLead
-): Promise<Lead> {
+): Promise<Lead | null> {
   const normalized = normalizeLead(rawData)
+
+  // --- Dedup: Facebook ---
+  // Double-check inside processIncomingLead to catch race conditions
+  // where two webhook calls both passed the outer dedup check simultaneously
+  if (source === 'facebook' && rawData.leadgen_id) {
+    const { data: existing } = await supabaseAdmin
+      .from('leads')
+      .select('id')
+      .filter('raw_data->leadgen_id', 'eq', `"${rawData.leadgen_id}"`)
+      .maybeSingle()
+    if (existing) {
+      console.log(`Dedup: Facebook lead ${rawData.leadgen_id} already exists, skipping`)
+      return null
+    }
+  }
 
   // 1. Save lead to Supabase
   const { data: lead, error } = await supabaseAdmin
@@ -58,25 +74,60 @@ export async function processIncomingLead(
     .contains('sources', [source])
 
   if (connections && connections.length > 0) {
-    try {
-      for (const conn of connections) {
-        await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
-        await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
-      }
+    const MAX_RETRIES = 3
+    let syncSuccess = false
+    let lastError: unknown = null
 
-      // Mark as synced
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        for (const conn of connections) {
+          await ensureSheetHeaders(conn.sheet_id, conn.sheet_tab)
+          await appendLeadToSheet(conn.sheet_id, conn.sheet_tab, lead)
+        }
+        syncSuccess = true
+        break
+      } catch (err) {
+        lastError = err
+        console.error(`Sheets sync attempt ${attempt}/${MAX_RETRIES} failed:`, err)
+        if (attempt < MAX_RETRIES) {
+          await new Promise(r => setTimeout(r, attempt * 1000))
+        }
+      }
+    }
+
+    if (syncSuccess) {
       await supabaseAdmin
         .from('leads')
         .update({ synced_to_sheets: true })
         .eq('id', lead.id)
-
       lead.synced_to_sheets = true
-    } catch (err) {
-      console.error('Failed to sync lead to Google Sheets:', err)
+    } else {
+      // Send alert email — sync failed after all retries
+      try {
+        const { Resend } = await import('resend')
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const errMsg = lastError instanceof Error ? lastError.message : String(lastError)
+        await resend.emails.send({
+          from: 'GG Marketing <info@ggmarketing-s.com>',
+          to: ['drorgigi11@gmail.com'],
+          subject: '⚠️ Lead sync to Google Sheets failed',
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:500px">
+              <h2 style="color:#dc2626">Sheets Sync Failed</h2>
+              <p>Lead <b>${lead.name ?? 'Unknown'}</b> (${lead.source}) was saved to Supabase but failed to sync to Google Sheets after ${MAX_RETRIES} attempts.</p>
+              <p><b>Error:</b> ${errMsg}</p>
+              <p><b>Lead ID:</b> ${lead.id}</p>
+              <p style="color:#888;font-size:12px">The hourly cron will retry automatically.</p>
+            </div>
+          `,
+        })
+      } catch (emailErr) {
+        console.error('Failed to send sync alert email:', emailErr)
+      }
     }
   }
 
-  // Send email notification
+  // 3. Send email notification
   try {
     await sendLeadEmail(lead)
   } catch (err) {
