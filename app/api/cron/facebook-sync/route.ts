@@ -2,16 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { processIncomingLead } from '@/lib/process-lead'
 
-const FORM_IDS = [
-  '872134585241561',   // patio_oct2025-copy
-  '739123742520910',   // patio_oct2025
-  '1945215816878207',  // patio_oct2025-copy-copy
-  '1836221777103969',  // patio_oct2025_holiday
-  '913048947947689',   // local-copy
-  '1963030877940395',  // bathroom_gift1
-  '4392281067765738',  // kitchen_gift1
-  '1630392191249644',  // kitchen_gift
-]
+async function fetchAllFormIds(token: string, pageId: string): Promise<string[]> {
+  const formIds: string[] = []
+  let url = `https://graph.facebook.com/v19.0/${pageId}/leadgen_forms?fields=id,leads_count&limit=50&access_token=${token}`
+
+  while (url) {
+    const res = await fetch(url)
+    if (!res.ok) break
+    const data = await res.json()
+    for (const form of data.data ?? []) {
+      if ((form.leads_count ?? 0) > 0) formIds.push(form.id)
+    }
+    url = data.paging?.next ?? null
+  }
+
+  return formIds
+}
 
 async function fetchLeadData(leadgenId: string) {
   const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN
@@ -73,26 +79,28 @@ async function fetchLeadData(leadgenId: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Verify cron secret
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN!
+  const pageId = process.env.FACEBOOK_PAGE_ID!
+
   let processed = 0
   let skipped = 0
 
-  for (const formId of FORM_IDS) {
+  const formIds = await fetchAllFormIds(token, pageId)
+
+  for (const formId of formIds) {
     try {
-      const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN
       const res = await fetch(
-        `https://graph.facebook.com/v19.0/${formId}/leads?fields=id,created_time&limit=10&access_token=${token}`
+        `https://graph.facebook.com/v19.0/${formId}/leads?fields=id,created_time&limit=25&access_token=${token}`
       )
       if (!res.ok) continue
       const data = await res.json()
 
       for (const lead of data.data ?? []) {
-        // Check if already in Supabase
         const { data: existing } = await supabaseAdmin
           .from('leads')
           .select('id')
@@ -101,7 +109,6 @@ export async function GET(req: NextRequest) {
 
         if (existing) { skipped++; continue }
 
-        // New lead - process it
         try {
           const leadData = await fetchLeadData(lead.id)
           await processIncomingLead('facebook', leadData)
@@ -115,5 +122,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, processed, skipped })
+  return NextResponse.json({ ok: true, processed, skipped, forms_scanned: formIds.length })
 }
