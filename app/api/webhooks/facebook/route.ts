@@ -101,8 +101,8 @@ async function processWebhookBody(body: unknown) {
         .from('leads')
         .select('id')
         .filter('raw_data->leadgen_id', 'eq', `"${leadgenId}"`)
-        .maybeSingle()
-      if (existing) continue
+        .limit(1)
+      if (existing && existing.length > 0) continue
 
       try {
         const leadData = await fetchLeadData(leadgenId)

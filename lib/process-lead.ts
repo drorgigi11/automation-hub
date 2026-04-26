@@ -39,15 +39,16 @@ export async function processIncomingLead(
   const normalized = normalizeLead(rawData)
 
   // --- Dedup: Facebook ---
-  // Double-check inside processIncomingLead to catch race conditions
-  // where two webhook calls both passed the outer dedup check simultaneously
+  // .limit(1) instead of .maybeSingle() — maybeSingle returns null when
+  // multiple rows match, which silently breaks dedup once a duplicate
+  // already exists and lets new copies pile up on every cron run.
   if (source === 'facebook' && rawData.leadgen_id) {
     const { data: existing } = await supabaseAdmin
       .from('leads')
       .select('id')
       .filter('raw_data->leadgen_id', 'eq', `"${rawData.leadgen_id}"`)
-      .maybeSingle()
-    if (existing) {
+      .limit(1)
+    if (existing && existing.length > 0) {
       console.log(`Dedup: Facebook lead ${rawData.leadgen_id} already exists, skipping`)
       return null
     }
@@ -65,7 +66,16 @@ export async function processIncomingLead(
     .select()
     .single()
 
-  if (error) throw new Error(`Failed to save lead: ${error.message}`)
+  if (error) {
+    // 23505 = unique_violation — another concurrent request inserted the
+    // same Facebook leadgen_id between our dedup check and this insert.
+    // Treat as a successful skip rather than a failure.
+    if (error.code === '23505') {
+      console.log(`Dedup (DB): unique violation, lead already exists`)
+      return null
+    }
+    throw new Error(`Failed to save lead: ${error.message}`)
+  }
 
   // 2. Find matching sheet connections for this source
   const { data: connections } = await supabaseAdmin

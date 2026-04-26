@@ -31,6 +31,13 @@ CREATE INDEX IF NOT EXISTS leads_source_idx ON leads(source);
 CREATE INDEX IF NOT EXISTS leads_created_at_idx ON leads(created_at DESC);
 CREATE INDEX IF NOT EXISTS leads_synced_idx ON leads(synced_to_sheets);
 
+-- Hard guarantee against duplicate Facebook leads even under race conditions
+-- (webhook + cron firing simultaneously, retries, etc.). Code-level dedup
+-- has a SELECT-then-INSERT window; this index closes it at the DB level.
+CREATE UNIQUE INDEX IF NOT EXISTS leads_facebook_leadgen_id_unique
+  ON leads ((raw_data->>'leadgen_id'))
+  WHERE source = 'facebook' AND raw_data->>'leadgen_id' IS NOT NULL;
+
 -- Enable Row Level Security
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sheet_connections ENABLE ROW LEVEL SECURITY;

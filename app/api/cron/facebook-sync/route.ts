@@ -105,9 +105,9 @@ export async function GET(req: NextRequest) {
           .from('leads')
           .select('id')
           .filter('raw_data->leadgen_id', 'eq', `"${lead.id}"`)
-          .maybeSingle()
+          .limit(1)
 
-        if (existing) { skipped++; continue }
+        if (existing && existing.length > 0) { skipped++; continue }
 
         try {
           const leadData = await fetchLeadData(lead.id)
