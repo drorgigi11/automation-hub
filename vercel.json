@@ -3,6 +3,10 @@
     {
       "path": "/api/admin/resync-leads",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/facebook-sync",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
