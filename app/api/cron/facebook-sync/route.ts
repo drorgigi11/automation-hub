@@ -94,13 +94,21 @@ export async function GET(req: NextRequest) {
 
   for (const formId of formIds) {
     try {
-      const res = await fetch(
-        `https://graph.facebook.com/v19.0/${formId}/leads?fields=id,created_time&limit=25&access_token=${token}`
-      )
-      if (!res.ok) continue
-      const data = await res.json()
+      // Paginate through all leads in this form. Without pagination we
+      // miss older leads in high-volume forms (e.g. patio_oct2025-copy
+      // with 42 leads — the oldest 17 never got pulled at limit=25).
+      let leadsUrl: string | null =
+        `https://graph.facebook.com/v19.0/${formId}/leads?fields=id,created_time&limit=100&access_token=${token}`
+      let formLeads: { id: string }[] = []
+      while (leadsUrl) {
+        const res: Response = await fetch(leadsUrl)
+        if (!res.ok) break
+        const data: { data?: { id: string }[]; paging?: { next?: string } } = await res.json()
+        formLeads = formLeads.concat(data.data ?? [])
+        leadsUrl = data.paging?.next ?? null
+      }
 
-      for (const lead of data.data ?? []) {
+      for (const lead of formLeads) {
         const { data: existing } = await supabaseAdmin
           .from('leads')
           .select('id')
