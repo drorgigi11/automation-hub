@@ -7,7 +7,6 @@ import { ArrowRight, Check, Loader2 } from 'lucide-react'
 interface FormData {
   interested: string
   interestedMultiple: string[]
-  ownership: string
   zipCode: string
   name: string
   phone: string
@@ -49,7 +48,6 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
   const [formData, setFormData] = useState<FormData>({
     interested: '',
     interestedMultiple: [],
-    ownership: '',
     zipCode: '',
     name: '',
     phone: '',
@@ -59,7 +57,7 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const submitGuardRef = useRef(false)
-  const totalSteps = 6
+  const totalSteps = 5
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -147,7 +145,6 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
         phone: data.phone,
         variant,
         zip_code: data.zipCode,
-        ownership: data.ownership,
         interested: variant === 'kitchen' ? data.interested : null,
         interested_multiple: variant !== 'kitchen' ? data.interestedMultiple : null,
         submitted_at: new Date().toISOString(),
@@ -250,32 +247,8 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
 
       case 2:
         return (
-          <div key="step2" className={animClass}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 20, color: 'var(--rv-card-fg)' }}>
-              I am... <span style={{ color: 'var(--rv-primary)' }}>*</span>
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                { value: 'homeowner', label: 'The homeowner' },
-                { value: 'renter', label: 'Renter' },
-                { value: 'other', label: 'Other' },
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  className={`rv-btn-form ${formData.ownership === opt.value ? 'rv-btn-selected' : ''}`}
-                  onClick={() => handleOptionSelect('ownership', opt.value)}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )
-
-      case 3:
-        return (
           <InputStep
-            key="step3"
+            key="step2"
             animClass={animClass}
             label="My ZIP code is..."
             placeholder="Enter your 5-digit ZIP code"
@@ -287,10 +260,10 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
           />
         )
 
-      case 4:
+      case 3:
         return (
           <InputStep
-            key="step4"
+            key="step3"
             animClass={animClass}
             label="My name is..."
             placeholder="Enter your full name"
@@ -300,10 +273,10 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
           />
         )
 
-      case 5:
+      case 4:
         return (
           <InputStep
-            key="step5"
+            key="step4"
             animClass={animClass}
             label="My phone is..."
             placeholder="(555) 555-5555"
@@ -314,10 +287,10 @@ export default function LeadForm({ variant = 'kitchen' }: LeadFormProps) {
           />
         )
 
-      case 6:
+      case 5:
         return (
           <InputStep
-            key="step6"
+            key="step5"
             animClass={animClass}
             label="My email is..."
             placeholder="you@example.com"
