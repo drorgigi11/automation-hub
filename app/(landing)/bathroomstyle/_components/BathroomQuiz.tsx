@@ -49,6 +49,7 @@ const STYLES: StyleDef[] = [
       '/bathroomstyle/modern-spa/1.jpg',
       '/bathroomstyle/modern-spa/2.jpg',
       '/bathroomstyle/modern-spa/3.jpg',
+      '/bathroomstyle/modern-spa/4.jpg',
     ],
   },
   {
