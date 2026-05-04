@@ -43,7 +43,12 @@ const STYLES: StyleDef[] = [
     name: 'Natural PNW Spa',
     description: 'Warm wood tones, soft natural colors, black fixtures, and a calm Pacific Northwest feel.',
     gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)',
-    images: [],
+    images: [
+      '/bathroomstyle/natural-pnw-spa/1.jpg',
+      '/bathroomstyle/natural-pnw-spa/2.jpg',
+      '/bathroomstyle/natural-pnw-spa/3.jpg',
+      '/bathroomstyle/natural-pnw-spa/4.jpg',
+    ],
   },
 ]
 

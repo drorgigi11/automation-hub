@@ -18,7 +18,11 @@ const phoneLink = 'tel:+14255324714'
 const STYLE_LABELS: Record<string, { name: string; gradient: string; isLight?: boolean; images: string[] }> = {
   'modern-spa':           { name: 'Modern Spa',         gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)', images: [] },
   'clean-contemporary':   { name: 'Clean Contemporary', gradient: 'linear-gradient(135deg, #e8eaef 0%, #f5f6f8 100%)', isLight: true, images: [] },
-  'natural-pnw-spa':      { name: 'Natural PNW Spa',    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)', images: [] },
+  'natural-pnw-spa':      { name: 'Natural PNW Spa',    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)', images: [
+    '/bathroomstyle/natural-pnw-spa/1.jpg',
+    '/bathroomstyle/natural-pnw-spa/2.jpg',
+    '/bathroomstyle/natural-pnw-spa/3.jpg',
+  ] },
   'modern-wet-room':      { name: 'Modern Wet Room',    gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)', images: ['/bathroomstyle/modern-wet-room/1.jpg'] },
 }
 
