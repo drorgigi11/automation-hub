@@ -63,14 +63,14 @@ function ThankYouContent() {
   }, [])
 
   const headline = firstName
-    ? `Thanks, ${firstName}! Your designer will call within 24 hours.`
-    : `Thanks! Your designer will call within 24 hours.`
+    ? `Thanks, ${firstName}! Your project manager will call within 24 hours.`
+    : `Thanks! Your project manager will call within 24 hours.`
 
   const subhead = isConsult
-    ? `Your designer will help you find the perfect style for your home. While you wait — here are a few recent projects from the ${city} area:`
+    ? `Your project manager will help you find the perfect style for your home. While you wait — here are a few of our recent projects from the ${city} area:`
     : styleInfo
-      ? `While you wait — here are 3 ${styleInfo.name} bathrooms we recently completed in the ${city} area:`
-      : `While you wait — here are a few recent projects from the ${city} area:`
+      ? `While you wait — here are a few photos from one of our recent ${styleInfo.name} projects.`
+      : `While you wait — here are a few photos from one of our recent projects.`
 
   // For consult, show one image from each of 3 different styles. Otherwise 3 of the picked style.
   const tiles: { name: string; gradient: string; isLight?: boolean; n: number; src?: string }[] = isConsult
