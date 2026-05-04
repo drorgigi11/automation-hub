@@ -21,14 +21,24 @@ const STYLES: StyleDef[] = [
     name: 'Modern Wet Room',
     description: 'A bold modern layout with dark tile, black fixtures, glass walls, and a shower-and-tub wet room feel.',
     gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
-    images: ['/bathroomstyle/modern-wet-room/1.jpg'],
+    images: [
+      '/bathroomstyle/modern-wet-room/1.jpg',
+      '/bathroomstyle/modern-wet-room/2.jpg',
+      '/bathroomstyle/modern-wet-room/3.jpg',
+      '/bathroomstyle/modern-wet-room/4.jpg',
+    ],
   },
   {
     id: 'modern-spa',
     name: 'Modern Spa',
     description: 'Clean lines, glass showers, freestanding tubs, calm colors, and a relaxing spa-inspired feel.',
     gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)',
-    images: [],
+    images: [
+      '/bathroomstyle/modern-spa/1.jpg',
+      '/bathroomstyle/modern-spa/2.jpg',
+      '/bathroomstyle/modern-spa/3.jpg',
+      '/bathroomstyle/modern-spa/4.jpg',
+    ],
   },
   {
     id: 'clean-contemporary',
@@ -36,7 +46,12 @@ const STYLES: StyleDef[] = [
     description: 'Bright finishes, marble-look tile, glass shower doors, and a fresh modern look.',
     gradient: 'linear-gradient(135deg, #e8eaef 0%, #f5f6f8 100%)',
     isLight: true,
-    images: [],
+    images: [
+      '/bathroomstyle/clean-contemporary/1.jpg',
+      '/bathroomstyle/clean-contemporary/2.jpg',
+      '/bathroomstyle/clean-contemporary/3.jpg',
+      '/bathroomstyle/clean-contemporary/4.jpg',
+    ],
   },
   {
     id: 'natural-pnw-spa',
