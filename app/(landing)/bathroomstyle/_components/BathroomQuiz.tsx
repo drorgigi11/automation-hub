@@ -29,6 +29,18 @@ const STYLES: StyleDef[] = [
     ],
   },
   {
+    id: 'natural-pnw-spa',
+    name: 'Natural PNW Spa',
+    description: 'Warm wood tones, soft natural colors, black fixtures, and a calm Pacific Northwest feel.',
+    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)',
+    images: [
+      '/bathroomstyle/natural-pnw-spa/1.jpg',
+      '/bathroomstyle/natural-pnw-spa/2.jpg',
+      '/bathroomstyle/natural-pnw-spa/3.jpg',
+      '/bathroomstyle/natural-pnw-spa/4.jpg',
+    ],
+  },
+  {
     id: 'modern-spa',
     name: 'Modern Spa',
     description: 'Clean lines, glass showers, freestanding tubs, calm colors, and a relaxing spa-inspired feel.',
@@ -53,21 +65,9 @@ const STYLES: StyleDef[] = [
       '/bathroomstyle/clean-contemporary/4.jpg',
     ],
   },
-  {
-    id: 'natural-pnw-spa',
-    name: 'Natural PNW Spa',
-    description: 'Warm wood tones, soft natural colors, black fixtures, and a calm Pacific Northwest feel.',
-    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)',
-    images: [
-      '/bathroomstyle/natural-pnw-spa/1.jpg',
-      '/bathroomstyle/natural-pnw-spa/2.jpg',
-      '/bathroomstyle/natural-pnw-spa/3.jpg',
-      '/bathroomstyle/natural-pnw-spa/4.jpg',
-    ],
-  },
 ]
 
-const SLOTS_PER_STYLE = 5
+const SLOTS_PER_STYLE = 4
 
 const TIMING_OPTIONS = [
   { value: 'asap', label: 'ASAP (within 1-2 months)' },
