@@ -67,9 +67,9 @@ const STYLES: StyleDef[] = [
 ]
 
 const TIMING_OPTIONS = [
-  { value: 'asap', label: 'ASAP (within 1-2 months)' },
-  { value: '3-6-months', label: 'Within 3-6 months' },
-  { value: '6-plus-months', label: '6+ months out' },
+  { value: 'asap-30-days', label: 'ASAP (within 30 days)' },
+  { value: '1-2-months', label: '1-2 months' },
+  { value: '3-months-out', label: '3 months out' },
   { value: 'exploring', label: 'Just exploring ideas' },
 ]
 
