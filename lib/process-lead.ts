@@ -54,27 +54,67 @@ export async function processIncomingLead(
     }
   }
 
-  // 1. Save lead to Supabase
-  const { data: lead, error } = await supabaseAdmin
-    .from('leads')
-    .insert({
-      source,
-      ...normalized,
-      raw_data: rawData,
-      synced_to_sheets: false,
-    })
-    .select()
-    .single()
+  // 1. Save lead to Supabase. If a partial_id is present and a partial row
+  // exists, update it in place (so the final submit reuses the same row
+  // instead of creating a duplicate).
+  const partialId = typeof rawData.partial_id === 'string' ? rawData.partial_id : null
+  let lead: Lead | null = null
 
-  if (error) {
-    // 23505 = unique_violation — another concurrent request inserted the
-    // same Facebook leadgen_id between our dedup check and this insert.
-    // Treat as a successful skip rather than a failure.
-    if (error.code === '23505') {
-      console.log(`Dedup (DB): unique violation, lead already exists`)
-      return null
+  if (partialId) {
+    const { data: existing } = await supabaseAdmin
+      .from('leads')
+      .select('id, raw_data')
+      .filter('raw_data->>partial_id', 'eq', partialId)
+      .limit(1)
+      .maybeSingle()
+
+    if (existing) {
+      const existingRaw = (existing.raw_data as Record<string, unknown> | null) ?? {}
+      const mergedRaw = { ...existingRaw, ...rawData, is_partial: false }
+      const { data: updated, error: updateErr } = await supabaseAdmin
+        .from('leads')
+        .update({
+          source,
+          ...normalized,
+          raw_data: mergedRaw,
+          synced_to_sheets: false,
+        })
+        .eq('id', existing.id)
+        .select()
+        .single()
+      if (updateErr) throw new Error(`Failed to update lead: ${updateErr.message}`)
+      lead = updated
     }
-    throw new Error(`Failed to save lead: ${error.message}`)
+  }
+
+  if (!lead) {
+    const { data: inserted, error } = await supabaseAdmin
+      .from('leads')
+      .insert({
+        source,
+        ...normalized,
+        raw_data: rawData,
+        synced_to_sheets: false,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      if (error.code === '23505') {
+        console.log(`Dedup (DB): unique violation, lead already exists`)
+        return null
+      }
+      throw new Error(`Failed to save lead: ${error.message}`)
+    }
+    lead = inserted
+  }
+
+  if (!lead) throw new Error('Failed to save lead: no row returned')
+
+  // Phone gate: only sync to Sheets and send email reminder for leads that
+  // include a phone number. Partial leads (no phone yet) stay in Supabase only.
+  if (!normalized.phone) {
+    return lead
   }
 
   // 2. Find matching sheet connections for this source

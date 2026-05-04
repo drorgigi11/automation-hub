@@ -107,6 +107,37 @@ export default function BathroomQuiz() {
   const [lightbox, setLightbox] = useState<{ styleName: string; n: number; gradient: string; isLight?: boolean; src?: string } | null>(null)
   const [utmParams, setUtmParams] = useState<Record<string, string>>({})
   const submitGuard = useRef(false)
+  const partialIdRef = useRef<string | null>(null)
+  const getPartialId = () => {
+    if (!partialIdRef.current) partialIdRef.current = crypto.randomUUID()
+    return partialIdRef.current
+  }
+  const savePartial = (overrides: Partial<FormData> = {}) => {
+    const merged = { ...data, ...overrides }
+    const payload = {
+      partial_id: getPartialId(),
+      variant: 'bathroomstyle',
+      first_name: merged.firstName || null,
+      last_name: merged.lastName || null,
+      name: `${merged.firstName} ${merged.lastName}`.trim() || null,
+      email: merged.email || null,
+      phone: merged.phone || null,
+      zip_code: merged.zip || null,
+      interested: merged.style || null,
+      timing: merged.timing || null,
+      campaign_name: utmParams.utm_campaign ?? null,
+      adset_name: utmParams.utm_term ?? null,
+      ad_name: utmParams.utm_content ?? null,
+      utm_source: utmParams.utm_source ?? null,
+      utm_medium: utmParams.utm_medium ?? null,
+    }
+    fetch('/api/leads/partial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {})
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -132,11 +163,13 @@ export default function BathroomQuiz() {
 
   const selectStyle = (styleId: string) => {
     setData(d => ({ ...d, style: styleId }))
+    savePartial({ style: styleId })
     setTimeout(goNext, 320)
   }
 
   const selectTiming = (val: string) => {
     setData(d => ({ ...d, timing: val }))
+    savePartial({ timing: val })
     setTimeout(goNext, 320)
   }
 
@@ -150,6 +183,7 @@ export default function BathroomQuiz() {
       return
     }
     setErrors(e => ({ ...e, zip: undefined }))
+    savePartial({ zip: data.zip })
     goNext()
   }
 
@@ -171,6 +205,7 @@ export default function BathroomQuiz() {
 
     try {
       const payload = {
+        partial_id: getPartialId(),
         variant: 'bathroomstyle',
         first_name: data.firstName,
         last_name: data.lastName,
