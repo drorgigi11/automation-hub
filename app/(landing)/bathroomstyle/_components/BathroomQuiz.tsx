@@ -49,7 +49,6 @@ const STYLES: StyleDef[] = [
       '/bathroomstyle/modern-spa/1.jpg',
       '/bathroomstyle/modern-spa/2.jpg',
       '/bathroomstyle/modern-spa/3.jpg',
-      '/bathroomstyle/modern-spa/4.jpg',
     ],
   },
   {
@@ -66,8 +65,6 @@ const STYLES: StyleDef[] = [
     ],
   },
 ]
-
-const SLOTS_PER_STYLE = 4
 
 const TIMING_OPTIONS = [
   { value: 'asap', label: 'ASAP (within 1-2 months)' },
@@ -471,8 +468,7 @@ function Step1Style({
                   WebkitOverflowScrolling: 'touch',
                 }}
               >
-                {Array.from({ length: SLOTS_PER_STYLE }).map((_, i) => {
-                  const realSrc = style.images[i]
+                {style.images.map((realSrc, i) => {
                   return (
                     <button
                       key={i}
