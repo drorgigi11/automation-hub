@@ -701,7 +701,7 @@ function Step6Phone({
         Last step — what&apos;s the best phone to reach you? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
-        A senior designer will call within 24 hours to discuss your project.
+        We&apos;ll call within 24 hours to book your design consultation.
       </p>
       <input
         autoFocus
