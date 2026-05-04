@@ -76,7 +76,7 @@ const TIMING_OPTIONS = [
   { value: 'exploring', label: 'Just exploring ideas' },
 ]
 
-const TOTAL_STEPS = 4
+const TOTAL_STEPS = 6
 
 interface FormData {
   style: string
@@ -187,16 +187,35 @@ export default function BathroomQuiz() {
     goNext()
   }
 
-  const submitContact = async () => {
+  const submitName = () => {
     const newErrors: Partial<Record<keyof FormData, string>> = {}
     if (!data.firstName.trim()) newErrors.firstName = 'Required'
     if (!data.lastName.trim()) newErrors.lastName = 'Required'
-    if (!validateEmail(data.email)) newErrors.email = 'Please enter a valid email'
-    if (!validatePhone(data.phone)) newErrors.phone = 'Please enter a valid phone'
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
+      setErrors(e => ({ ...e, ...newErrors }))
       return
     }
+    setErrors(e => ({ ...e, firstName: undefined, lastName: undefined }))
+    savePartial({ firstName: data.firstName, lastName: data.lastName })
+    goNext()
+  }
+
+  const submitEmail = () => {
+    if (!validateEmail(data.email)) {
+      setErrors(e => ({ ...e, email: 'Please enter a valid email' }))
+      return
+    }
+    setErrors(e => ({ ...e, email: undefined }))
+    savePartial({ email: data.email })
+    goNext()
+  }
+
+  const submitPhone = async () => {
+    if (!validatePhone(data.phone)) {
+      setErrors(e => ({ ...e, phone: 'Please enter a valid phone' }))
+      return
+    }
+    setErrors(e => ({ ...e, phone: undefined }))
 
     if (submitGuard.current) return
     submitGuard.current = true
@@ -304,13 +323,29 @@ export default function BathroomQuiz() {
           />
         )}
         {step === 4 && (
-          <Step4Contact
+          <Step4Name
             data={data}
             errors={errors}
+            onChange={(field, v) => setData(d => ({ ...d, [field]: v }))}
+            onSubmit={submitName}
+          />
+        )}
+        {step === 5 && (
+          <Step5Email
+            data={data}
+            error={errors.email}
+            onChange={v => setData(d => ({ ...d, email: v }))}
+            onSubmit={submitEmail}
+          />
+        )}
+        {step === 6 && (
+          <Step6Phone
+            data={data}
+            error={errors.phone}
             isSubmitting={isSubmitting}
             submitError={submitError}
-            onChange={(field, v) => setData(d => ({ ...d, [field]: v }))}
-            onSubmit={submitContact}
+            onChange={v => setData(d => ({ ...d, phone: v }))}
+            onSubmit={submitPhone}
           />
         )}
       </div>
@@ -564,79 +599,135 @@ function Step3Zip({
   )
 }
 
-// ───────────────────── Step 4: Contact ─────────────────────
-function Step4Contact({
+// ───────────────────── Step 4: Name ─────────────────────
+function Step4Name({
   data,
   errors,
-  isSubmitting,
-  submitError,
   onChange,
   onSubmit,
 }: {
   data: FormData
   errors: Partial<Record<keyof FormData, string>>
-  isSubmitting: boolean
-  submitError: string | null
   onChange: (field: keyof FormData, v: string) => void
   onSubmit: () => void
 }) {
   return (
     <div>
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
-        Last step — where should we send your free consultation details? <span style={{ color: 'var(--rv-primary)' }}>*</span>
+        What&apos;s your name? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
-        A senior designer will reach out within 24 hours to discuss your project.
+        Your designer will use this when they reach out.
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div>
-            <input
-              type="text"
-              placeholder="First name"
-              autoComplete="given-name"
-              value={data.firstName}
-              onChange={e => onChange('firstName', e.target.value)}
-              className={`rv-input ${errors.firstName ? 'rv-input-error' : ''}`}
-            />
-            {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.firstName}</p>}
-          </div>
-          <div>
-            <input
-              type="text"
-              placeholder="Last name"
-              autoComplete="family-name"
-              value={data.lastName}
-              onChange={e => onChange('lastName', e.target.value)}
-              className={`rv-input ${errors.lastName ? 'rv-input-error' : ''}`}
-            />
-            {errors.lastName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.lastName}</p>}
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <div>
+          <input
+            autoFocus
+            type="text"
+            placeholder="First name"
+            autoComplete="given-name"
+            value={data.firstName}
+            onChange={e => onChange('firstName', e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+            className={`rv-input ${errors.firstName ? 'rv-input-error' : ''}`}
+          />
+          {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.firstName}</p>}
         </div>
         <div>
           <input
-            type="email"
-            placeholder="Email"
-            autoComplete="email"
-            value={data.email}
-            onChange={e => onChange('email', e.target.value)}
-            className={`rv-input ${errors.email ? 'rv-input-error' : ''}`}
+            type="text"
+            placeholder="Last name"
+            autoComplete="family-name"
+            value={data.lastName}
+            onChange={e => onChange('lastName', e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+            className={`rv-input ${errors.lastName ? 'rv-input-error' : ''}`}
           />
-          {errors.email && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.email}</p>}
-        </div>
-        <div>
-          <input
-            type="tel"
-            placeholder="Phone"
-            autoComplete="tel"
-            value={data.phone}
-            onChange={e => onChange('phone', e.target.value)}
-            className={`rv-input ${errors.phone ? 'rv-input-error' : ''}`}
-          />
-          {errors.phone && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.phone}</p>}
+          {errors.lastName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.lastName}</p>}
         </div>
       </div>
+
+      <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
+        Continue <ArrowRight size={16} />
+      </button>
+    </div>
+  )
+}
+
+// ───────────────────── Step 5: Email ─────────────────────
+function Step5Email({
+  data,
+  error,
+  onChange,
+  onSubmit,
+}: {
+  data: FormData
+  error?: string
+  onChange: (v: string) => void
+  onSubmit: () => void
+}) {
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
+        What&apos;s your email? <span style={{ color: 'var(--rv-primary)' }}>*</span>
+      </h2>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+        We&apos;ll send your free consultation confirmation here.
+      </p>
+      <input
+        autoFocus
+        type="email"
+        placeholder="you@example.com"
+        autoComplete="email"
+        value={data.email}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+        className={`rv-input ${error ? 'rv-input-error' : ''}`}
+      />
+      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 8 }}>{error}</p>}
+      <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
+        Continue <ArrowRight size={16} />
+      </button>
+    </div>
+  )
+}
+
+// ───────────────────── Step 6: Phone (final submit) ─────────────────────
+function Step6Phone({
+  data,
+  error,
+  isSubmitting,
+  submitError,
+  onChange,
+  onSubmit,
+}: {
+  data: FormData
+  error?: string
+  isSubmitting: boolean
+  submitError: string | null
+  onChange: (v: string) => void
+  onSubmit: () => void
+}) {
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
+        Last step — what&apos;s the best phone to reach you? <span style={{ color: 'var(--rv-primary)' }}>*</span>
+      </h2>
+      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+        A senior designer will call within 24 hours to discuss your project.
+      </p>
+      <input
+        autoFocus
+        type="tel"
+        placeholder="(555) 555-5555"
+        autoComplete="tel"
+        value={data.phone}
+        onChange={e => onChange(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+        className={`rv-input ${error ? 'rv-input-error' : ''}`}
+      />
+      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 8 }}>{error}</p>}
 
       <button
         onClick={onSubmit}
