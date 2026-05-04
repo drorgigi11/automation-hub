@@ -42,8 +42,8 @@ const STYLES: StyleDef[] = [
   },
   {
     id: 'modern-spa',
-    name: 'Modern Spa',
-    description: 'Clean lines, glass showers, freestanding tubs, calm colors, and a relaxing spa-inspired feel.',
+    name: 'Warm Wood Spa',
+    description: 'A calming bathroom style with clean lines, glass showers, warm wood tones, wood-look flooring, and a relaxing spa-inspired feel.',
     gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)',
     images: [
       '/bathroomstyle/modern-spa/1.jpg',
