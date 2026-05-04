@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import Header from '../../_components/Header'
+import Header from '../../renovision/_components/Header'
 import { Phone, CheckCircle } from 'lucide-react'
 
 declare global {

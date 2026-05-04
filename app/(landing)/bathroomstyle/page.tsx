@@ -1,4 +1,4 @@
-import Header from '../_components/Header'
+import Header from '../renovision/_components/Header'
 import BathroomQuiz from './_components/BathroomQuiz'
 
 export default function RenovisionBathroomStyle() {

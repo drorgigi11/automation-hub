@@ -14,6 +14,7 @@ const PUBLIC_PATHS = [
   '/kitchen',
   '/outdoor',
   '/general',
+  '/bathroomstyle',
   '/renovision',
   '/thank-you',
   '/privacy',

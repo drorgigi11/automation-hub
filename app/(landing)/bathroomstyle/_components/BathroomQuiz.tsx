@@ -173,7 +173,7 @@ export default function BathroomQuiz() {
         first: data.firstName,
         zip: data.zip,
       })
-      router.push(`/renovision/bathroomstyle/thank-you?${params.toString()}`)
+      router.push(`/bathroomstyle/thank-you?${params.toString()}`)
     } catch {
       setSubmitError('Something went wrong. Please try again.')
       setIsSubmitting(false)
