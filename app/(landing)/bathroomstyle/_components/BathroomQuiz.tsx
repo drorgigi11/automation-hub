@@ -188,15 +188,17 @@ export default function BathroomQuiz() {
   }
 
   const submitName = () => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {}
-    if (!data.firstName.trim()) newErrors.firstName = 'Required'
-    if (!data.lastName.trim()) newErrors.lastName = 'Required'
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(e => ({ ...e, ...newErrors }))
+    const trimmed = data.firstName.trim()
+    if (!trimmed) {
+      setErrors(e => ({ ...e, firstName: 'Required' }))
       return
     }
+    const parts = trimmed.split(/\s+/)
+    const firstName = parts[0]
+    const lastName = parts.slice(1).join(' ')
+    setData(d => ({ ...d, firstName, lastName }))
     setErrors(e => ({ ...e, firstName: undefined, lastName: undefined }))
-    savePartial({ firstName: data.firstName, lastName: data.lastName })
+    savePartial({ firstName, lastName })
     goNext()
   }
 
@@ -617,36 +619,20 @@ function Step4Name({
         What&apos;s your name? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
-        Your designer will use this when they reach out.
+        So we know what to call you when we reach out.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        <div>
-          <input
-            autoFocus
-            type="text"
-            placeholder="First name"
-            autoComplete="given-name"
-            value={data.firstName}
-            onChange={e => onChange('firstName', e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
-            className={`rv-input ${errors.firstName ? 'rv-input-error' : ''}`}
-          />
-          {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.firstName}</p>}
-        </div>
-        <div>
-          <input
-            type="text"
-            placeholder="Last name"
-            autoComplete="family-name"
-            value={data.lastName}
-            onChange={e => onChange('lastName', e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
-            className={`rv-input ${errors.lastName ? 'rv-input-error' : ''}`}
-          />
-          {errors.lastName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.lastName}</p>}
-        </div>
-      </div>
+      <input
+        autoFocus
+        type="text"
+        placeholder="Full name"
+        autoComplete="name"
+        value={data.firstName}
+        onChange={e => onChange('firstName', e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+        className={`rv-input ${errors.firstName ? 'rv-input-error' : ''}`}
+      />
+      {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.firstName}</p>}
 
       <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
         Continue <ArrowRight size={16} />
