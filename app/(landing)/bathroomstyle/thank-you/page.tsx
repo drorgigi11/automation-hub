@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Header from '../../renovision/_components/Header'
 import { Phone, CheckCircle } from 'lucide-react'
 
@@ -14,11 +15,11 @@ declare global {
 const phoneNumber = '(425) 532-4714'
 const phoneLink = 'tel:+14255324714'
 
-const STYLE_LABELS: Record<string, { name: string; gradient: string; isLight?: boolean }> = {
-  'modern-spa':           { name: 'Modern Spa',         gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)' },
-  'clean-contemporary':   { name: 'Clean Contemporary', gradient: 'linear-gradient(135deg, #e8eaef 0%, #f5f6f8 100%)', isLight: true },
-  'natural-pnw-spa':      { name: 'Natural PNW Spa',    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)' },
-  'modern-wet-room':      { name: 'Modern Wet Room',    gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)' },
+const STYLE_LABELS: Record<string, { name: string; gradient: string; isLight?: boolean; images: string[] }> = {
+  'modern-spa':           { name: 'Modern Spa',         gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)', images: [] },
+  'clean-contemporary':   { name: 'Clean Contemporary', gradient: 'linear-gradient(135deg, #e8eaef 0%, #f5f6f8 100%)', isLight: true, images: [] },
+  'natural-pnw-spa':      { name: 'Natural PNW Spa',    gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)', images: [] },
+  'modern-wet-room':      { name: 'Modern Wet Room',    gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)', images: ['/bathroomstyle/modern-wet-room/1.jpg'] },
 }
 
 function cityFromZip(zip: string): string {
@@ -68,12 +69,12 @@ function ThankYouContent() {
       : `While you wait — here are a few recent projects from the ${city} area:`
 
   // For consult, show one image from each of 3 different styles. Otherwise 3 of the picked style.
-  const tiles = isConsult
-    ? [STYLE_LABELS['modern-spa'], STYLE_LABELS['clean-contemporary'], STYLE_LABELS['natural-pnw-spa']]
+  const tiles: { name: string; gradient: string; isLight?: boolean; n: number; src?: string }[] = isConsult
+    ? [STYLE_LABELS['modern-wet-room'], STYLE_LABELS['modern-spa'], STYLE_LABELS['clean-contemporary']]
         .filter((s): s is NonNullable<typeof s> => Boolean(s))
-        .map((s, i) => ({ ...s, n: i + 1 }))
+        .map((s, i) => ({ name: s.name, gradient: s.gradient, isLight: s.isLight, n: i + 1, src: s.images[0] }))
     : styleInfo
-      ? [1, 2, 3].map(n => ({ ...styleInfo, n }))
+      ? [0, 1, 2].map(i => ({ name: styleInfo.name, gradient: styleInfo.gradient, isLight: styleInfo.isLight, n: i + 1, src: styleInfo.images[i] }))
       : [1, 2, 3].map(n => ({ name: 'Renovision', gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)', isLight: false, n }))
 
   return (
@@ -116,6 +117,7 @@ function ThankYouContent() {
                 <div
                   key={i}
                   style={{
+                    position: 'relative',
                     aspectRatio: '4/3',
                     borderRadius: 8, overflow: 'hidden',
                     background: tile.gradient,
@@ -123,11 +125,15 @@ function ThankYouContent() {
                     color: tile.isLight ? '#666' : 'rgba(255,255,255,0.75)',
                   }}
                 >
-                  <div style={{ textAlign: 'center', padding: 10 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{tile.name}</div>
-                    <div style={{ fontSize: 11, opacity: 0.6 }}>Image {tile.n}</div>
-                    <div style={{ fontSize: 9, opacity: 0.45, marginTop: 4 }}>(placeholder)</div>
-                  </div>
+                  {tile.src ? (
+                    <Image src={tile.src} alt={`${tile.name} bathroom`} fill sizes="240px" style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: 10 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2 }}>{tile.name}</div>
+                      <div style={{ fontSize: 11, opacity: 0.6 }}>Image {tile.n}</div>
+                      <div style={{ fontSize: 9, opacity: 0.45, marginTop: 4 }}>(placeholder)</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

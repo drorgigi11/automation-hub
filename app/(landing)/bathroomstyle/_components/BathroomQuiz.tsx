@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { ArrowLeft, ArrowRight, Check, X, Loader2 } from 'lucide-react'
 
 interface StyleDef {
@@ -10,14 +11,24 @@ interface StyleDef {
   description: string
   gradient: string
   isLight?: boolean
+  images: string[]
 }
 
+// Order is the order shown on the page. Slots beyond images[] render placeholders.
 const STYLES: StyleDef[] = [
+  {
+    id: 'modern-wet-room',
+    name: 'Modern Wet Room',
+    description: 'A bold modern layout with dark tile, black fixtures, glass walls, and a shower-and-tub wet room feel.',
+    gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
+    images: ['/bathroomstyle/modern-wet-room/1.jpg'],
+  },
   {
     id: 'modern-spa',
     name: 'Modern Spa',
     description: 'Clean lines, glass showers, freestanding tubs, calm colors, and a relaxing spa-inspired feel.',
     gradient: 'linear-gradient(135deg, #2a3a4f 0%, #1a2a3f 100%)',
+    images: [],
   },
   {
     id: 'clean-contemporary',
@@ -25,22 +36,18 @@ const STYLES: StyleDef[] = [
     description: 'Bright finishes, marble-look tile, glass shower doors, and a fresh modern look.',
     gradient: 'linear-gradient(135deg, #e8eaef 0%, #f5f6f8 100%)',
     isLight: true,
+    images: [],
   },
   {
     id: 'natural-pnw-spa',
     name: 'Natural PNW Spa',
     description: 'Warm wood tones, soft natural colors, black fixtures, and a calm Pacific Northwest feel.',
     gradient: 'linear-gradient(135deg, #4a3a2f 0%, #2f261d 100%)',
-  },
-  {
-    id: 'modern-wet-room',
-    name: 'Modern Wet Room',
-    description: 'A bold modern layout with dark tile, black fixtures, glass walls, and a shower-and-tub wet room feel.',
-    gradient: 'linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%)',
+    images: [],
   },
 ]
 
-const IMAGES_PER_STYLE = 5
+const SLOTS_PER_STYLE = 5
 
 const TIMING_OPTIONS = [
   { value: 'asap', label: 'ASAP (within 1-2 months)' },
@@ -77,7 +84,7 @@ export default function BathroomQuiz() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [lightbox, setLightbox] = useState<{ styleName: string; n: number; gradient: string; isLight?: boolean } | null>(null)
+  const [lightbox, setLightbox] = useState<{ styleName: string; n: number; gradient: string; isLight?: boolean; src?: string } | null>(null)
   const [utmParams, setUtmParams] = useState<Record<string, string>>({})
   const submitGuard = useRef(false)
 
@@ -285,18 +292,30 @@ export default function BathroomQuiz() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: '100%', maxWidth: 900, aspectRatio: '4/3',
+              position: 'relative',
+              width: '100%', maxWidth: 1100, aspectRatio: '3/2',
               borderRadius: 12, overflow: 'hidden',
               background: lightbox.gradient,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: lightbox.isLight ? '#666' : 'rgba(255,255,255,0.85)',
             }}
           >
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{lightbox.styleName}</div>
-              <div style={{ fontSize: 16, opacity: 0.7 }}>Image {lightbox.n}</div>
-              <div style={{ fontSize: 12, opacity: 0.5, marginTop: 12 }}>(placeholder — replace with real photo)</div>
-            </div>
+            {lightbox.src ? (
+              <Image
+                src={lightbox.src}
+                alt={`${lightbox.styleName} bathroom — image ${lightbox.n}`}
+                fill
+                sizes="(max-width: 1100px) 100vw, 1100px"
+                style={{ objectFit: 'cover' }}
+                priority
+              />
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{lightbox.styleName}</div>
+                <div style={{ fontSize: 16, opacity: 0.7 }}>Image {lightbox.n}</div>
+                <div style={{ fontSize: 12, opacity: 0.5, marginTop: 12 }}>(placeholder — replace with real photo)</div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -312,7 +331,7 @@ function Step1Style({
 }: {
   data: FormData
   onSelect: (id: string) => void
-  onOpenLightbox: (img: { styleName: string; n: number; gradient: string; isLight?: boolean }) => void
+  onOpenLightbox: (img: { styleName: string; n: number; gradient: string; isLight?: boolean; src?: string }) => void
 }) {
   const designConsultId = 'design-consultation'
   const isConsult = data.style === designConsultId
@@ -360,29 +379,43 @@ function Step1Style({
                   WebkitOverflowScrolling: 'touch',
                 }}
               >
-                {Array.from({ length: IMAGES_PER_STYLE }).map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onOpenLightbox({ styleName: style.name, n: i + 1, gradient: style.gradient, isLight: style.isLight })}
-                    aria-label={`${style.name} image ${i + 1} — click to enlarge`}
-                    style={{
-                      flex: '0 0 auto', minWidth: 220, aspectRatio: '4/3',
-                      border: 'none', cursor: 'zoom-in', padding: 0,
-                      borderRadius: 8, overflow: 'hidden',
-                      background: style.gradient,
-                      scrollSnapAlign: 'start',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: style.isLight ? '#666' : 'rgba(255,255,255,0.7)',
-                      transition: 'transform 0.2s',
-                    }}
-                  >
-                    <div style={{ textAlign: 'center', padding: 12 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{style.name}</div>
-                      <div style={{ fontSize: 12, opacity: 0.65 }}>Image {i + 1}</div>
-                      <div style={{ fontSize: 10, opacity: 0.45, marginTop: 6 }}>(placeholder)</div>
-                    </div>
-                  </button>
-                ))}
+                {Array.from({ length: SLOTS_PER_STYLE }).map((_, i) => {
+                  const realSrc = style.images[i]
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => onOpenLightbox({ styleName: style.name, n: i + 1, gradient: style.gradient, isLight: style.isLight, src: realSrc })}
+                      aria-label={`${style.name} image ${i + 1} — click to enlarge`}
+                      style={{
+                        position: 'relative',
+                        flex: '0 0 auto', width: 240, aspectRatio: '4/3',
+                        border: 'none', cursor: 'zoom-in', padding: 0,
+                        borderRadius: 8, overflow: 'hidden',
+                        background: style.gradient,
+                        scrollSnapAlign: 'start',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: style.isLight ? '#666' : 'rgba(255,255,255,0.7)',
+                        transition: 'transform 0.2s',
+                      }}
+                    >
+                      {realSrc ? (
+                        <Image
+                          src={realSrc}
+                          alt={`${style.name} bathroom — image ${i + 1}`}
+                          fill
+                          sizes="240px"
+                          style={{ objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', padding: 12 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{style.name}</div>
+                          <div style={{ fontSize: 12, opacity: 0.65 }}>Image {i + 1}</div>
+                          <div style={{ fontSize: 10, opacity: 0.45, marginTop: 6 }}>(placeholder)</div>
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
 
               <button
