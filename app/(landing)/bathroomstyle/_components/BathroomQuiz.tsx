@@ -275,14 +275,14 @@ export default function BathroomQuiz() {
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
               background: 'transparent', border: 'none', color: 'rgba(0,0,0,0.55)',
-              fontSize: 13, cursor: 'pointer', padding: '4px 8px',
+              fontSize: 15, cursor: 'pointer', padding: '4px 8px',
             }}
           >
             <ArrowLeft size={14} /> Back
           </button>
         )}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'rgba(0,0,0,0.6)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'rgba(0,0,0,0.6)' }}>
             <span style={{ fontWeight: 600, letterSpacing: '0.05em' }}>STEP {step} OF {TOTAL_STEPS}</span>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -350,7 +350,7 @@ export default function BathroomQuiz() {
       </div>
 
       {step === 1 && (
-        <p style={{ textAlign: 'center', color: 'rgba(0,0,0,0.5)', fontSize: 12, marginTop: 16 }}>
+        <p style={{ textAlign: 'center', color: 'rgba(0,0,0,0.5)', fontSize: 14, marginTop: 16 }}>
           Browse, pick a style you love, and we&apos;ll send you a free design consultation.
         </p>
       )}
@@ -402,7 +402,7 @@ export default function BathroomQuiz() {
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>{lightbox.styleName}</div>
                 <div style={{ fontSize: 16, opacity: 0.7 }}>Image {lightbox.n}</div>
-                <div style={{ fontSize: 12, opacity: 0.5, marginTop: 12 }}>(placeholder — replace with real photo)</div>
+                <div style={{ fontSize: 16, opacity: 0.5, marginTop: 12 }}>(placeholder — replace with real photo)</div>
               </div>
             )}
           </div>
@@ -431,7 +431,7 @@ function Step1Style({
         <h1 style={{ fontSize: 'clamp(1.4rem, 3.5vw, 1.85rem)', fontWeight: 700, color: 'var(--rv-card-fg)', lineHeight: 1.2, marginBottom: 8 }}>
           Step 1: Choose Your Bathroom Style
         </h1>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', maxWidth: 560, margin: '0 auto', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.75)', maxWidth: 560, margin: '0 auto', lineHeight: 1.5 }}>
           Browse our recent bathroom remodels, pick the look you love, and answer a few quick questions to get a realistic price range and free design consultation.
         </p>
       </div>
@@ -451,10 +451,10 @@ function Step1Style({
               }}
             >
               <div style={{ marginBottom: 12 }}>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 4 }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 4 }}>
                   {style.name}
                 </h3>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5 }}>
                   {style.description}
                 </p>
               </div>
@@ -496,8 +496,8 @@ function Step1Style({
                         />
                       ) : (
                         <div style={{ textAlign: 'center', padding: 12 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{style.name}</div>
-                          <div style={{ fontSize: 12, opacity: 0.65 }}>Image {i + 1}</div>
+                          <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 2 }}>{style.name}</div>
+                          <div style={{ fontSize: 16, opacity: 0.65 }}>Image {i + 1}</div>
                           <div style={{ fontSize: 10, opacity: 0.45, marginTop: 6 }}>(placeholder)</div>
                         </div>
                       )}
@@ -540,7 +540,7 @@ function Step2Timing({ data, onSelect }: { data: FormData; onSelect: (val: strin
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
         When would you like to get started? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 24 }}>
+      <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 24 }}>
         Whether you&apos;re ready now or still planning, we&apos;ll tailor your free consultation around your timeline.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -575,7 +575,7 @@ function Step3Zip({
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
         What&apos;s your ZIP code? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+      <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
         We want to make sure we serve your area.
       </p>
       <input
@@ -589,7 +589,7 @@ function Step3Zip({
         onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
         className={`rv-input ${error ? 'rv-input-error' : ''}`}
       />
-      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 8 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 15, marginTop: 8 }}>{error}</p>}
       <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
         Continue <ArrowRight size={16} />
       </button>
@@ -614,7 +614,7 @@ function Step4Name({
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
         What&apos;s your name? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+      <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
         So we know what to call you when we reach out.
       </p>
 
@@ -628,7 +628,7 @@ function Step4Name({
         onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
         className={`rv-input ${errors.firstName ? 'rv-input-error' : ''}`}
       />
-      {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 12, marginTop: 4 }}>{errors.firstName}</p>}
+      {errors.firstName && <p style={{ color: 'var(--rv-destructive)', fontSize: 14, marginTop: 4 }}>{errors.firstName}</p>}
 
       <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
         Continue <ArrowRight size={16} />
@@ -654,7 +654,7 @@ function Step5Email({
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
         What&apos;s your email? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+      <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
         We&apos;ll send your free consultation confirmation here.
       </p>
       <input
@@ -667,7 +667,7 @@ function Step5Email({
         onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
         className={`rv-input ${error ? 'rv-input-error' : ''}`}
       />
-      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 8 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 15, marginTop: 8 }}>{error}</p>}
       <button onClick={onSubmit} className="rv-btn-cta" style={{ marginTop: 20 }}>
         Continue <ArrowRight size={16} />
       </button>
@@ -696,7 +696,7 @@ function Step6Phone({
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
         Last step — what&apos;s the best phone to reach you? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
+      <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', marginBottom: 20 }}>
         We&apos;ll call within 24 hours to book your design consultation.
       </p>
       <input
@@ -709,7 +709,7 @@ function Step6Phone({
         onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
         className={`rv-input ${error ? 'rv-input-error' : ''}`}
       />
-      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 8 }}>{error}</p>}
+      {error && <p style={{ color: 'var(--rv-destructive)', fontSize: 15, marginTop: 8 }}>{error}</p>}
 
       <button
         onClick={onSubmit}
@@ -721,7 +721,7 @@ function Step6Phone({
       </button>
 
       {submitError && (
-        <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 12, textAlign: 'center' }}>
+        <p style={{ color: 'var(--rv-destructive)', fontSize: 15, marginTop: 12, textAlign: 'center' }}>
           {submitError}
         </p>
       )}
