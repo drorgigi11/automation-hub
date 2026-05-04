@@ -505,10 +505,10 @@ function Step2Timing({ data, onSelect }: { data: FormData; onSelect: (val: strin
   return (
     <div>
       <h2 style={{ fontSize: '1.35rem', fontWeight: 600, color: 'var(--rv-card-fg)', marginBottom: 8, lineHeight: 1.3 }}>
-        When would you like to begin? <span style={{ color: 'var(--rv-primary)' }}>*</span>
+        When would you like to get started? <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', marginBottom: 24 }}>
-        This helps your designer plan the best timeline for you.
+        Whether you&apos;re ready now or still planning, we&apos;ll tailor your free consultation around your timeline.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {TIMING_OPTIONS.map(opt => (
