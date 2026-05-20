@@ -15,14 +15,14 @@ export default function Header() {
       boxShadow: '0 4px 18px rgba(10,31,61,0.10)',
     }}>
       <Image
-        src="/peakbuilders/gallery/green.jpg"
+        src="/peakbuilders/header-bg.jpg"
         alt=""
         fill
         priority
         sizes="100vw"
         style={{
           objectFit: 'cover',
-          objectPosition: 'center 55%',
+          objectPosition: 'center',
           zIndex: -2,
         }}
       />
@@ -31,7 +31,7 @@ export default function Header() {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(180deg, rgba(10,31,61,0.78) 0%, rgba(0,0,0,0.85) 100%)',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(10,31,61,0.55) 100%)',
           zIndex: -1,
         }}
       />
