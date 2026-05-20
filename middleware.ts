@@ -16,9 +16,18 @@ const PUBLIC_PATHS = [
   '/general',
   '/bathroomstyle',
   '/renovision',
+  '/peakbuilders',
   '/thank-you',
   '/privacy',
 ]
+
+// Custom-domain → app-path mapping. The host serves the app section as if it
+// were the root, so peak-builders.net/ renders /peakbuilders, peak-builders.net/thank-you
+// renders /peakbuilders/thank-you, etc.
+const CUSTOM_DOMAINS: Record<string, string> = {
+  'peak-builders.net': '/peakbuilders',
+  'www.peak-builders.net': '/peakbuilders',
+}
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/') || pathname.startsWith(p + '?'))
@@ -26,6 +35,18 @@ function isPublic(pathname: string): boolean {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  const hostname = req.headers.get('host')?.toLowerCase().split(':')[0] ?? ''
+
+  // Custom-domain rewrite: serve the mapped section as if it were the root.
+  const mountPath = CUSTOM_DOMAINS[hostname]
+  if (mountPath && !pathname.startsWith(mountPath)
+      && !pathname.startsWith('/_next')
+      && !pathname.startsWith('/api')
+      && !pathname.includes('.')) {
+    const url = req.nextUrl.clone()
+    url.pathname = pathname === '/' ? mountPath : `${mountPath}${pathname}`
+    return NextResponse.rewrite(url)
+  }
 
   if (isPublic(pathname)) return NextResponse.next()
 
