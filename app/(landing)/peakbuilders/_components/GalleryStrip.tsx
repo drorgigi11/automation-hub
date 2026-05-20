@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -37,15 +37,77 @@ const ITEMS: GalleryItem[] = [
   { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg' },
 ]
 
+const LOOP = [...ITEMS, ...ITEMS]
 const CARD_STEP = 260 + 14 // card width + gap
+const AUTO_SPEED_PX_PER_SEC = 28 // matches the old ~70s marquee feel
+const RESUME_AFTER_MS = 3500
 
 export default function GalleryStrip() {
   const scrollerRef = useRef<HTMLDivElement>(null)
+  const pausedRef = useRef(false)
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const scrollBy = (direction: 1 | -1) => {
+  // Position the scroller in the middle of the first set on mount so the user
+  // has room to manually swipe in both directions before any wrap is needed.
+  useEffect(() => {
     const el = scrollerRef.current
     if (!el) return
-    el.scrollBy({ left: direction * CARD_STEP * 2, behavior: 'smooth' })
+    const id = requestAnimationFrame(() => {
+      if (el && el.scrollWidth > 0) {
+        el.scrollLeft = Math.max(el.scrollWidth / 4, CARD_STEP)
+      }
+    })
+    return () => cancelAnimationFrame(id)
+  }, [])
+
+  // Auto-advance + seamless wrap in both directions.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return
+    }
+
+    let lastTime = performance.now()
+    let raf = 0
+
+    const tick = (now: number) => {
+      const dt = (now - lastTime) / 1000
+      lastTime = now
+      const el = scrollerRef.current
+      if (el) {
+        if (!pausedRef.current) {
+          el.scrollLeft += AUTO_SPEED_PX_PER_SEC * dt
+        }
+        // Wrap checks run every frame so manual swipes loop too.
+        const halfWidth = el.scrollWidth / 2
+        if (halfWidth > 0) {
+          if (el.scrollLeft >= halfWidth) {
+            el.scrollLeft -= halfWidth
+          } else if (el.scrollLeft <= 0) {
+            el.scrollLeft += halfWidth
+          }
+        }
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  const pauseTemporarily = () => {
+    pausedRef.current = true
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+    resumeTimerRef.current = setTimeout(() => { pausedRef.current = false }, RESUME_AFTER_MS)
+  }
+
+  const onMouseEnter = () => {
+    pausedRef.current = true
+    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
+  }
+  const onMouseLeave = () => { pausedRef.current = false }
+
+  const handleArrow = (direction: 1 | -1) => {
+    pauseTemporarily()
+    scrollerRef.current?.scrollBy({ left: direction * CARD_STEP * 2, behavior: 'smooth' })
   }
 
   return (
@@ -62,105 +124,96 @@ export default function GalleryStrip() {
           gap: 14px;
           overflow-x: auto;
           overflow-y: hidden;
-          scroll-snap-type: x mandatory;
+          scroll-snap-type: x proximity;
           -webkit-overflow-scrolling: touch;
           padding: 8px 16px 16px;
           scrollbar-width: none;
-          scroll-behavior: smooth;
           overscroll-behavior-x: contain;
         }
         .pb-scroller::-webkit-scrollbar { display: none; }
         .pb-scroller > * { scroll-snap-align: center; }
         .pb-scroller-mask {
+          position: relative;
           mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
           -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
         }
         .pb-arrow {
-          width: 38px; height: 38px; border-radius: 50%;
+          position: absolute;
+          top: 50%; transform: translateY(-50%);
+          width: 42px; height: 42px; border-radius: 50%;
           background: var(--pb-card); color: var(--pb-card-fg);
           border: 1px solid var(--pb-divider);
           display: flex; align-items: center; justify-content: center;
           cursor: pointer; transition: all 0.2s;
-          box-shadow: 0 2px 8px rgba(10,31,61,0.08);
+          box-shadow: 0 4px 14px rgba(10,31,61,0.18);
+          z-index: 5;
         }
         .pb-arrow:hover {
           background: var(--pb-primary);
           color: var(--pb-primary-fg);
           border-color: var(--pb-primary);
-          transform: scale(1.08);
+          transform: translateY(-50%) scale(1.08);
         }
-        .pb-arrow:active { transform: scale(0.96); }
+        .pb-arrow:active { transform: translateY(-50%) scale(0.96); }
+        .pb-arrow-left  { left: 10px; }
+        .pb-arrow-right { right: 10px; }
         @media (max-width: 640px) {
-          .pb-arrows { display: none !important; }
+          .pb-arrow { display: none; }
         }
       `}</style>
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'space-between',
-        gap: 16,
-        maxWidth: 1200,
-        margin: '0 auto 18px',
-        padding: '0 1.25rem',
-      }}>
-        <div style={{ textAlign: 'left' }}>
-          <p style={{
-            fontSize: 11,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: 'var(--pb-gold-dark)',
-            fontWeight: 700,
-            marginBottom: 8,
-          }}>
-            Recent Projects
-          </p>
-          <h2 className="pb-serif" style={{
-            fontSize: 'clamp(1.35rem, 3.5vw, 1.8rem)',
-            fontWeight: 700,
-            color: 'var(--pb-card-fg)',
-            margin: 0,
-            lineHeight: 1.2,
-          }}>
-            2,100+ Roofs Completed Across San Diego
-          </h2>
-        </div>
-        <div className="pb-arrows" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <button
-            type="button"
-            onClick={() => scrollBy(-1)}
-            aria-label="Scroll gallery left"
-            className="pb-arrow"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            onClick={() => scrollBy(1)}
-            aria-label="Scroll gallery right"
-            className="pb-arrow"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
+
+      <div style={{ textAlign: 'center', marginBottom: 22, padding: '0 1rem' }}>
+        <p style={{
+          fontSize: 11,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: 'var(--pb-gold-dark)',
+          fontWeight: 700,
+          marginBottom: 8,
+        }}>
+          Recent Projects
+        </p>
+        <h2 className="pb-serif" style={{
+          fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
+          fontWeight: 700,
+          color: 'var(--pb-card-fg)',
+          margin: 0,
+          lineHeight: 1.2,
+        }}>
+          2,100+ Roofs Completed Across San Diego
+        </h2>
       </div>
 
       <div className="pb-scroller-mask">
-        <div className="pb-scroller" ref={scrollerRef}>
-          {ITEMS.map((item, i) => (
-            <GalleryCard key={item.family} item={item} priority={i < 3} />
+        <button
+          type="button"
+          onClick={() => handleArrow(-1)}
+          aria-label="Scroll gallery left"
+          className="pb-arrow pb-arrow-left"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <div
+          className="pb-scroller"
+          ref={scrollerRef}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          onTouchStart={pauseTemporarily}
+          onPointerDown={pauseTemporarily}
+        >
+          {LOOP.map((item, i) => (
+            <GalleryCard key={`${item.family}-${i}`} item={item} priority={i < 3} />
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => handleArrow(1)}
+          aria-label="Scroll gallery right"
+          className="pb-arrow pb-arrow-right"
+        >
+          <ChevronRight size={20} />
+        </button>
       </div>
-
-      <p style={{
-        fontSize: 11,
-        color: 'var(--pb-muted-fg)',
-        textAlign: 'center',
-        marginTop: 6,
-        marginBottom: 0,
-      }}>
-        Swipe to see more &rsaquo;
-      </p>
     </section>
   )
 }
