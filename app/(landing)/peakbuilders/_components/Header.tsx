@@ -3,12 +3,39 @@ import Image from 'next/image'
 export default function Header() {
   return (
     <header style={{
+      position: 'relative',
       width: '100%',
-      padding: '20px 24px',
-      background: 'var(--pb-header-bg)',
+      padding: '24px',
+      minHeight: 120,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      isolation: 'isolate',
       boxShadow: '0 4px 18px rgba(10,31,61,0.10)',
     }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Image
+        src="/peakbuilders/gallery/green.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        style={{
+          objectFit: 'cover',
+          objectPosition: 'center 55%',
+          zIndex: -2,
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, rgba(10,31,61,0.78) 0%, rgba(0,0,0,0.85) 100%)',
+          zIndex: -1,
+        }}
+      />
+      <div style={{ position: 'relative', maxWidth: 1200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Image
           src="/peakbuilders/logo.png"
           alt="Peak Builders & Roofers of San Diego"
