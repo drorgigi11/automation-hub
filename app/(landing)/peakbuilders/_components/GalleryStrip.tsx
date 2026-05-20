@@ -1,5 +1,8 @@
+'use client'
+
+import { useRef } from 'react'
 import Image from 'next/image'
-import { MapPin } from 'lucide-react'
+import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface GalleryItem {
   family: string
@@ -34,9 +37,17 @@ const ITEMS: GalleryItem[] = [
   { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg' },
 ]
 
-const LOOP = [...ITEMS, ...ITEMS]
+const CARD_STEP = 260 + 14 // card width + gap
 
 export default function GalleryStrip() {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+
+  const scrollBy = (direction: 1 | -1) => {
+    const el = scrollerRef.current
+    if (!el) return
+    el.scrollBy({ left: direction * CARD_STEP * 2, behavior: 'smooth' })
+  }
+
   return (
     <section style={{
       width: '100%',
@@ -46,54 +57,110 @@ export default function GalleryStrip() {
       background: 'var(--pb-bg-soft)',
     }}>
       <style>{`
-        @keyframes pbMarquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        .pb-marquee {
+        .pb-scroller {
           display: flex;
           gap: 14px;
-          width: max-content;
-          animation: pbMarquee 70s linear infinite;
+          overflow-x: auto;
+          overflow-y: hidden;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          padding: 8px 16px 16px;
+          scrollbar-width: none;
+          scroll-behavior: smooth;
+          overscroll-behavior-x: contain;
         }
-        .pb-marquee:hover { animation-play-state: paused; }
-        .pb-marquee-mask {
-          mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
-          -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+        .pb-scroller::-webkit-scrollbar { display: none; }
+        .pb-scroller > * { scroll-snap-align: center; }
+        .pb-scroller-mask {
+          mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+          -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
         }
+        .pb-arrow {
+          width: 38px; height: 38px; border-radius: 50%;
+          background: var(--pb-card); color: var(--pb-card-fg);
+          border: 1px solid var(--pb-divider);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all 0.2s;
+          box-shadow: 0 2px 8px rgba(10,31,61,0.08);
+        }
+        .pb-arrow:hover {
+          background: var(--pb-primary);
+          color: var(--pb-primary-fg);
+          border-color: var(--pb-primary);
+          transform: scale(1.08);
+        }
+        .pb-arrow:active { transform: scale(0.96); }
         @media (max-width: 640px) {
-          .pb-marquee { animation-duration: 50s; }
+          .pb-arrows { display: none !important; }
         }
       `}</style>
-      <div style={{ textAlign: 'center', marginBottom: 24, padding: '0 1rem' }}>
-        <p style={{
-          fontSize: 11,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          color: 'var(--pb-gold-dark)',
-          fontWeight: 700,
-          marginBottom: 8,
-        }}>
-          Recent Projects
-        </p>
-        <h2 className="pb-serif" style={{
-          fontSize: 'clamp(1.4rem, 3.5vw, 1.8rem)',
-          fontWeight: 700,
-          color: 'var(--pb-card-fg)',
-          margin: 0,
-          lineHeight: 1.2,
-        }}>
-          2,100+ Roofs Completed Across San Diego
-        </h2>
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        gap: 16,
+        maxWidth: 1200,
+        margin: '0 auto 18px',
+        padding: '0 1.25rem',
+      }}>
+        <div style={{ textAlign: 'left' }}>
+          <p style={{
+            fontSize: 11,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'var(--pb-gold-dark)',
+            fontWeight: 700,
+            marginBottom: 8,
+          }}>
+            Recent Projects
+          </p>
+          <h2 className="pb-serif" style={{
+            fontSize: 'clamp(1.35rem, 3.5vw, 1.8rem)',
+            fontWeight: 700,
+            color: 'var(--pb-card-fg)',
+            margin: 0,
+            lineHeight: 1.2,
+          }}>
+            2,100+ Roofs Completed Across San Diego
+          </h2>
+        </div>
+        <div className="pb-arrows" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            type="button"
+            onClick={() => scrollBy(-1)}
+            aria-label="Scroll gallery left"
+            className="pb-arrow"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollBy(1)}
+            aria-label="Scroll gallery right"
+            className="pb-arrow"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
       </div>
 
-      <div className="pb-marquee-mask" style={{ overflow: 'hidden' }}>
-        <div className="pb-marquee">
-          {LOOP.map((item, i) => (
-            <GalleryCard key={`${item.family}-${i}`} item={item} priority={i < 4} />
+      <div className="pb-scroller-mask">
+        <div className="pb-scroller" ref={scrollerRef}>
+          {ITEMS.map((item, i) => (
+            <GalleryCard key={item.family} item={item} priority={i < 3} />
           ))}
         </div>
       </div>
+
+      <p style={{
+        fontSize: 11,
+        color: 'var(--pb-muted-fg)',
+        textAlign: 'center',
+        marginTop: 6,
+        marginBottom: 0,
+      }}>
+        Swipe to see more &rsaquo;
+      </p>
     </section>
   )
 }
