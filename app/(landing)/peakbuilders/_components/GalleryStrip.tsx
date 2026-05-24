@@ -2,7 +2,7 @@
 
 import { useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 
 interface GalleryItem {
   family: string
@@ -37,55 +37,66 @@ const ITEMS: GalleryItem[] = [
   { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg' },
 ]
 
+const CARD_WIDTH = 260
+const CARD_HEIGHT = 175
+const GAP = 14
+const STEP = CARD_WIDTH + GAP
+const SET_WIDTH = ITEMS.length * STEP
+
+const AUTO_SPEED_PX_PER_SEC = 35
+const FRICTION = 3.5             // higher = inertia stops faster
+const VELOCITY_CLAMP = 4000      // px/sec cap on fling momentum
+const RESUME_AFTER_RELEASE_MS = 1500
+const DIRECTION_LOCK_PX = 6      // touch dx threshold before we capture horizontal
+
+// Duplicate the items so wrapping by SET_WIDTH lands on visually identical content.
 const LOOP = [...ITEMS, ...ITEMS]
-const CARD_STEP = 260 + 14 // card width + gap
-const AUTO_SPEED_PX_PER_SEC = 28 // matches the old ~70s marquee feel
-const RESUME_AFTER_MS = 3500
 
 export default function GalleryStrip() {
-  const scrollerRef = useRef<HTMLDivElement>(null)
-  const pausedRef = useRef(false)
-  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const offsetRef = useRef(0)            // current translate offset (positive = scrolled right)
+  const velocityRef = useRef(0)          // px/sec — for inertia after release
+  const draggingRef = useRef(false)
+  const dragRef = useRef({
+    startX: 0,
+    startY: 0,
+    lastX: 0,
+    lastTime: 0,
+    captured: false,   // direction-locked to horizontal
+    pointerId: 0,
+  })
+  const hoveringRef = useRef(false)
+  const resumeAtRef = useRef(0)
 
-  // Position the scroller in the middle of the first set on mount so the user
-  // has room to manually swipe in both directions before any wrap is needed.
+  // Wrap helper — modulo handles arbitrarily-large jumps in a single step.
+  const normalize = (v: number) => ((v % SET_WIDTH) + SET_WIDTH) % SET_WIDTH
+
   useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const id = requestAnimationFrame(() => {
-      if (el && el.scrollWidth > 0) {
-        el.scrollLeft = Math.max(el.scrollWidth / 4, CARD_STEP)
-      }
-    })
-    return () => cancelAnimationFrame(id)
-  }, [])
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  // Auto-advance + seamless wrap in both directions.
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return
-    }
-
-    let lastTime = performance.now()
     let raf = 0
+    let lastTime = performance.now()
 
     const tick = (now: number) => {
-      const dt = (now - lastTime) / 1000
+      const dt = Math.min((now - lastTime) / 1000, 0.05)
       lastTime = now
-      const el = scrollerRef.current
-      if (el) {
-        if (!pausedRef.current) {
-          el.scrollLeft += AUTO_SPEED_PX_PER_SEC * dt
-        }
-        // Wrap checks run every frame so manual swipes loop too.
-        const halfWidth = el.scrollWidth / 2
-        if (halfWidth > 0) {
-          if (el.scrollLeft >= halfWidth) {
-            el.scrollLeft -= halfWidth
-          } else if (el.scrollLeft <= 0) {
-            el.scrollLeft += halfWidth
+      const track = trackRef.current
+      if (track) {
+        if (!draggingRef.current) {
+          if (Math.abs(velocityRef.current) > 2) {
+            // Inertia from a fling — decay exponentially.
+            offsetRef.current += velocityRef.current * dt
+            velocityRef.current *= Math.exp(-FRICTION * dt)
+          } else if (!hoveringRef.current && now >= resumeAtRef.current && !reduceMotion) {
+            offsetRef.current += AUTO_SPEED_PX_PER_SEC * dt
           }
         }
+        // Seamless wrap — content repeats every SET_WIDTH px. Modulo handles any size jump.
+        offsetRef.current = normalize(offsetRef.current)
+
+        track.style.transform = `translate3d(${-offsetRef.current}px, 0, 0)`
       }
       raf = requestAnimationFrame(tick)
     }
@@ -93,22 +104,80 @@ export default function GalleryStrip() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  const pauseTemporarily = () => {
-    pausedRef.current = true
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
-    resumeTimerRef.current = setTimeout(() => { pausedRef.current = false }, RESUME_AFTER_MS)
+  // --- Pointer handlers (mouse + touch + pen unified) ---
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Ignore right-click etc.
+    if (e.button !== undefined && e.button !== 0) return
+    draggingRef.current = true
+    velocityRef.current = 0
+    const now = performance.now()
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      lastX: e.clientX,
+      lastTime: now,
+      captured: e.pointerType === 'mouse', // mouse captures immediately; touch waits for direction
+      pointerId: e.pointerId,
+    }
+    if (e.pointerType === 'mouse') {
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
   }
 
-  const onMouseEnter = () => {
-    pausedRef.current = true
-    if (resumeTimerRef.current) { clearTimeout(resumeTimerRef.current); resumeTimerRef.current = null }
-  }
-  const onMouseLeave = () => { pausedRef.current = false }
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return
+    const d = dragRef.current
+    const dx = e.clientX - d.startX
+    const dy = e.clientY - d.startY
 
-  const handleArrow = (direction: 1 | -1) => {
-    pauseTemporarily()
-    scrollerRef.current?.scrollBy({ left: direction * CARD_STEP * 2, behavior: 'smooth' })
+    // For touch, lock direction first — release back to page if user is scrolling vertically.
+    if (!d.captured) {
+      if (Math.abs(dx) < DIRECTION_LOCK_PX && Math.abs(dy) < DIRECTION_LOCK_PX) return
+      if (Math.abs(dy) > Math.abs(dx)) {
+        draggingRef.current = false
+        return
+      }
+      d.captured = true
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
+
+    // Incremental update (delta since last move) — never lets offset accumulate
+    // an out-of-range value that the per-frame wrap can't catch.
+    const stepDx = e.clientX - d.lastX
+    offsetRef.current = normalize(offsetRef.current - stepDx)
+
+    const now = performance.now()
+    const elapsed = (now - d.lastTime) / 1000
+    if (elapsed > 0.001) {
+      const instantV = -stepDx / elapsed
+      velocityRef.current = velocityRef.current * 0.3 + instantV * 0.7
+    }
+    d.lastX = e.clientX
+    d.lastTime = now
   }
+
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return
+    draggingRef.current = false
+    try {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    } catch {}
+    velocityRef.current = Math.max(-VELOCITY_CLAMP, Math.min(VELOCITY_CLAMP, velocityRef.current))
+    resumeAtRef.current = performance.now() + RESUME_AFTER_RELEASE_MS
+  }
+
+  const onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    // Trackpad horizontal swipe — apply directly. Vertical wheel leaves the gallery alone.
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      offsetRef.current = normalize(offsetRef.current + e.deltaX)
+      velocityRef.current = 0
+      resumeAtRef.current = performance.now() + RESUME_AFTER_RELEASE_MS
+    }
+  }
+
+  const onMouseEnter = () => { hoveringRef.current = true }
+  const onMouseLeave = () => { hoveringRef.current = false }
 
   return (
     <section style={{
@@ -119,47 +188,24 @@ export default function GalleryStrip() {
       background: 'var(--pb-bg-soft)',
     }}>
       <style>{`
-        .pb-scroller {
-          display: flex;
-          gap: 14px;
-          overflow-x: auto;
-          overflow-y: hidden;
-          scroll-snap-type: x proximity;
-          -webkit-overflow-scrolling: touch;
-          padding: 8px 16px 16px;
-          scrollbar-width: none;
-          overscroll-behavior-x: contain;
-        }
-        .pb-scroller::-webkit-scrollbar { display: none; }
-        .pb-scroller > * { scroll-snap-align: center; }
-        .pb-scroller-mask {
+        .pb-marquee-viewport {
           position: relative;
+          overflow: hidden;
           mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
           -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+          touch-action: pan-y;          /* let page scroll vertically; we handle horizontal */
+          cursor: grab;
+          user-select: none;
         }
-        .pb-arrow {
-          position: absolute;
-          top: 50%; transform: translateY(-50%);
-          width: 42px; height: 42px; border-radius: 50%;
-          background: var(--pb-card); color: var(--pb-card-fg);
-          border: 1px solid var(--pb-divider);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all 0.2s;
-          box-shadow: 0 4px 14px rgba(10,31,61,0.18);
-          z-index: 5;
+        .pb-marquee-viewport:active { cursor: grabbing; }
+        .pb-marquee-track {
+          display: flex;
+          gap: ${GAP}px;
+          width: max-content;
+          padding: 8px 0 16px;
+          will-change: transform;
         }
-        .pb-arrow:hover {
-          background: var(--pb-primary);
-          color: var(--pb-primary-fg);
-          border-color: var(--pb-primary);
-          transform: translateY(-50%) scale(1.08);
-        }
-        .pb-arrow:active { transform: translateY(-50%) scale(0.96); }
-        .pb-arrow-left  { left: 10px; }
-        .pb-arrow-right { right: 10px; }
-        @media (max-width: 640px) {
-          .pb-arrow { display: none; }
-        }
+        .pb-marquee-track img { pointer-events: none; -webkit-user-drag: none; }
       `}</style>
 
       <div style={{ textAlign: 'center', marginBottom: 22, padding: '0 1rem' }}>
@@ -184,35 +230,21 @@ export default function GalleryStrip() {
         </h2>
       </div>
 
-      <div className="pb-scroller-mask">
-        <button
-          type="button"
-          onClick={() => handleArrow(-1)}
-          aria-label="Scroll gallery left"
-          className="pb-arrow pb-arrow-left"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <div
-          className="pb-scroller"
-          ref={scrollerRef}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onTouchStart={pauseTemporarily}
-          onPointerDown={pauseTemporarily}
-        >
+      <div
+        className="pb-marquee-viewport"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onWheel={onWheel}
+      >
+        <div className="pb-marquee-track" ref={trackRef}>
           {LOOP.map((item, i) => (
             <GalleryCard key={`${item.family}-${i}`} item={item} priority={i < 3} />
           ))}
         </div>
-        <button
-          type="button"
-          onClick={() => handleArrow(1)}
-          aria-label="Scroll gallery right"
-          className="pb-arrow pb-arrow-right"
-        >
-          <ChevronRight size={20} />
-        </button>
       </div>
     </section>
   )
@@ -222,7 +254,7 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
   return (
     <div style={{
       flex: '0 0 auto',
-      width: 260,
+      width: CARD_WIDTH,
       borderRadius: 12,
       overflow: 'hidden',
       background: 'var(--pb-card)',
@@ -230,7 +262,7 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
       boxShadow: '0 6px 20px rgba(10,31,61,0.08)',
       position: 'relative',
     }}>
-      <div style={{ position: 'relative', width: 260, height: 175, background: '#e5e7eb' }}>
+      <div style={{ position: 'relative', width: CARD_WIDTH, height: CARD_HEIGHT, background: '#e5e7eb' }}>
         <Image
           src={item.src}
           alt={`Roof project — ${item.family}`}
