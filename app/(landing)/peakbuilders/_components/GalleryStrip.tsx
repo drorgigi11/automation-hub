@@ -2,39 +2,40 @@
 
 import { useRef, useEffect } from 'react'
 import Image from 'next/image'
-import { MapPin } from 'lucide-react'
+import { MapPin, Star } from 'lucide-react'
 
 interface GalleryItem {
   family: string
   location: string
   src: string
+  quote: string
 }
 
 const ITEMS: GalleryItem[] = [
-  { family: 'The Carl Family', location: 'La Jolla, San Diego', src: '/peakbuilders/gallery/carl.jpg' },
-  { family: 'The Rem Family', location: 'Carmel Valley, San Diego', src: '/peakbuilders/gallery/rem.jpg' },
-  { family: 'The Lanahan Family', location: 'Encinitas, San Diego', src: '/peakbuilders/gallery/lanahan.jpg' },
-  { family: 'The Holeva Family', location: 'Point Loma, San Diego', src: '/peakbuilders/gallery/holeva.jpg' },
-  { family: 'The Mizrachi Family', location: 'Del Mar, San Diego', src: '/peakbuilders/gallery/mizrachi.jpg' },
-  { family: 'The Diaz Family', location: 'Chula Vista, San Diego', src: '/peakbuilders/gallery/diaz.jpg' },
-  { family: 'The Gonzales Family', location: 'Mira Mesa, San Diego', src: '/peakbuilders/gallery/gonzales.jpg' },
-  { family: 'The Weisbach Family', location: 'Rancho Bernardo, San Diego', src: '/peakbuilders/gallery/weisbach.jpg' },
-  { family: 'The Sommer Family', location: 'Rancho Santa Fe, San Diego', src: '/peakbuilders/gallery/sommer.jpg' },
-  { family: 'The Green Family', location: 'Carlsbad, San Diego', src: '/peakbuilders/gallery/green.jpg' },
-  { family: 'The Fishbein Family', location: 'North Park, San Diego', src: '/peakbuilders/gallery/fishbein.jpg' },
-  { family: 'The Castillo Family', location: 'Scripps Ranch, San Diego', src: '/peakbuilders/gallery/castillo.jpg' },
-  { family: 'The Barry Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/barry.jpg' },
-  { family: 'The Rendone Family', location: 'Poway, San Diego', src: '/peakbuilders/gallery/rendone.jpg' },
-  { family: 'The Betts Family', location: 'Coronado, San Diego', src: '/peakbuilders/gallery/betts.jpg' },
-  { family: 'The Levy Family', location: 'Pacific Beach, San Diego', src: '/peakbuilders/gallery/levy.jpg' },
-  { family: 'The Dang Family', location: 'Mission Hills, San Diego', src: '/peakbuilders/gallery/dang.jpg' },
-  { family: 'The Nguyen Family', location: 'Escondido, San Diego', src: '/peakbuilders/gallery/nguyen.jpg' },
-  { family: 'The Gray Family', location: 'Tierrasanta, San Diego', src: '/peakbuilders/gallery/gray.jpg' },
-  { family: 'The Rowe Family', location: 'Bonita, San Diego', src: '/peakbuilders/gallery/rowe.jpg' },
-  { family: 'The Saake Family', location: 'Ocean Beach, San Diego', src: '/peakbuilders/gallery/saake.jpg' },
-  { family: 'The Hodges Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/hodges.jpg' },
-  { family: 'The Ferrari Family', location: 'Hillcrest, San Diego', src: '/peakbuilders/gallery/ferrari.jpg' },
-  { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg' },
+  { family: 'The Carl Family', location: 'La Jolla, San Diego', src: '/peakbuilders/gallery/carl.jpg', quote: 'Showed up when they said they would and finished a day early. Couldn’t ask for more.' },
+  { family: 'The Rem Family', location: 'Carmel Valley, San Diego', src: '/peakbuilders/gallery/rem.jpg', quote: 'Easiest contractor experience we’ve ever had. The quote matched the final bill — to the dollar.' },
+  { family: 'The Lanahan Family', location: 'Encinitas, San Diego', src: '/peakbuilders/gallery/lanahan.jpg', quote: 'They handled all the HOA paperwork and made the whole thing painless.' },
+  { family: 'The Holeva Family', location: 'Point Loma, San Diego', src: '/peakbuilders/gallery/holeva.jpg', quote: 'Roof looks incredible and the cleanup was spotless — like they were never here.' },
+  { family: 'The Mizrachi Family', location: 'Del Mar, San Diego', src: '/peakbuilders/gallery/mizrachi.jpg', quote: 'We got three quotes and Peak was the most thorough by far. Really glad we went with them.' },
+  { family: 'The Diaz Family', location: 'Chula Vista, San Diego', src: '/peakbuilders/gallery/diaz.jpg', quote: 'Walked us through every option without any pressure. Real pros, top to bottom.' },
+  { family: 'The Gonzales Family', location: 'Mira Mesa, San Diego', src: '/peakbuilders/gallery/gonzales.jpg', quote: 'Done in two days. New roof, no surprises, fair price. Exactly what they promised.' },
+  { family: 'The Weisbach Family', location: 'Rancho Bernardo, San Diego', src: '/peakbuilders/gallery/weisbach.jpg', quote: 'Took the time to sit down and explain everything. Felt like we were working with family.' },
+  { family: 'The Sommer Family', location: 'Rancho Santa Fe, San Diego', src: '/peakbuilders/gallery/sommer.jpg', quote: 'Beautiful workmanship — our neighbors keep stopping by to ask who did the roof.' },
+  { family: 'The Green Family', location: 'Carlsbad, San Diego', src: '/peakbuilders/gallery/green.jpg', quote: 'After a bad experience with another company, these guys restored my faith in contractors.' },
+  { family: 'The Fishbein Family', location: 'North Park, San Diego', src: '/peakbuilders/gallery/fishbein.jpg', quote: 'Old craftsman home with a tricky roofline — they absolutely nailed it. Looks original.' },
+  { family: 'The Castillo Family', location: 'Scripps Ranch, San Diego', src: '/peakbuilders/gallery/castillo.jpg', quote: 'Fast quote, fast scheduling, fast install. And it still looks great two years later.' },
+  { family: 'The Barry Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/barry.jpg', quote: 'They caught water damage during inspection we had no idea about. Saved us thousands.' },
+  { family: 'The Rendone Family', location: 'Poway, San Diego', src: '/peakbuilders/gallery/rendone.jpg', quote: 'Crew was so respectful around our kids and dogs. Felt completely safe with them here.' },
+  { family: 'The Betts Family', location: 'Coronado, San Diego', src: '/peakbuilders/gallery/betts.jpg', quote: 'Coastal home, salt air — they knew exactly what materials would hold up. Two years strong.' },
+  { family: 'The Levy Family', location: 'Pacific Beach, San Diego', src: '/peakbuilders/gallery/levy.jpg', quote: 'Best contractor experience in years. Showed up, did the work, cleaned up, left. Done.' },
+  { family: 'The Dang Family', location: 'Mission Hills, San Diego', src: '/peakbuilders/gallery/dang.jpg', quote: 'Replaced 80-year-old tiles and made it look brand new without losing any of the character.' },
+  { family: 'The Nguyen Family', location: 'Escondido, San Diego', src: '/peakbuilders/gallery/nguyen.jpg', quote: 'A storm hit a week after our install and we didn’t lose a single shingle. Tells you everything.' },
+  { family: 'The Gray Family', location: 'Tierrasanta, San Diego', src: '/peakbuilders/gallery/gray.jpg', quote: 'Communication was top-notch — daily updates, photos, the whole deal. No guessing.' },
+  { family: 'The Rowe Family', location: 'Bonita, San Diego', src: '/peakbuilders/gallery/rowe.jpg', quote: 'Did exactly what they promised on day one. No upsells, no hidden costs, no nonsense.' },
+  { family: 'The Saake Family', location: 'Ocean Beach, San Diego', src: '/peakbuilders/gallery/saake.jpg', quote: 'Came back six months later to check on the work, no charge. That’s a rare thing these days.' },
+  { family: 'The Hodges Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/hodges.jpg', quote: 'Worked around our schedule and were super flexible — huge help with two toddlers at home.' },
+  { family: 'The Ferrari Family', location: 'Hillcrest, San Diego', src: '/peakbuilders/gallery/ferrari.jpg', quote: 'Old roof was leaking everywhere. The new one hasn’t dripped once, even in the heaviest rain.' },
+  { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg', quote: 'Got bids from four companies — Peak was the only one I trusted from the very first call.' },
 ]
 
 const CARD_WIDTH = 260
@@ -261,6 +262,8 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
       border: '1px solid var(--pb-divider)',
       boxShadow: '0 6px 20px rgba(10,31,61,0.08)',
       position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
       <div style={{ position: 'relative', width: CARD_WIDTH, height: CARD_HEIGHT, background: '#e5e7eb' }}>
         <Image
@@ -272,25 +275,41 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
           priority={priority}
         />
       </div>
-      <div style={{ padding: '12px 14px 14px' }}>
-        <div style={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: 'var(--pb-card-fg)',
-          marginBottom: 4,
-          lineHeight: 1.3,
-        }}>
-          {item.family}
+      <div style={{ padding: '12px 14px 14px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+        <div style={{ display: 'flex', gap: 2, color: 'var(--pb-gold-dark)' }} aria-label="5 out of 5 stars">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Star key={i} size={13} fill="currentColor" strokeWidth={0} />
+          ))}
         </div>
-        <div style={{
-          fontSize: 12,
-          color: 'var(--pb-muted-fg)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
+        <p style={{
+          fontSize: 12.5,
+          lineHeight: 1.45,
+          color: 'var(--pb-card-fg)',
+          margin: 0,
+          fontStyle: 'italic',
         }}>
-          <MapPin size={11} color="var(--pb-gold-dark)" />
-          {item.location}
+          &ldquo;{item.quote}&rdquo;
+        </p>
+        <div style={{ marginTop: 'auto', paddingTop: 4 }}>
+          <div style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--pb-card-fg)',
+            lineHeight: 1.3,
+            marginBottom: 2,
+          }}>
+            {item.family}
+          </div>
+          <div style={{
+            fontSize: 11.5,
+            color: 'var(--pb-muted-fg)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+          }}>
+            <MapPin size={11} color="var(--pb-gold-dark)" />
+            {item.location}
+          </div>
         </div>
       </div>
     </div>
