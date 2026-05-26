@@ -30,6 +30,7 @@ export default function LeadForm() {
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const submitGuardRef = useRef(false)
   const totalSteps = 5
 
@@ -79,16 +80,48 @@ export default function LeadForm() {
     if (step !== totalSteps) {
       goToNextStep()
     } else {
-      handleSubmit()
+      handleSubmit(updatedData)
     }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: FormData) => {
     if (submitGuardRef.current) return
     submitGuardRef.current = true
     setIsSubmitting(true)
-    // UI-only mode: simulate brief delay, then navigate to thank-you.
-    await new Promise(r => setTimeout(r, 450))
+    setSubmitError(null)
+
+    const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
+    const payload = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      zip_code: data.zipCode,
+      help_type: data.helpType,
+      page_url: typeof window !== 'undefined' ? window.location.href : null,
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
+      utm_content: params.get('utm_content'),
+      utm_term: params.get('utm_term'),
+      fbclid: params.get('fbclid'),
+      submitted_at: new Date().toISOString(),
+    }
+
+    try {
+      const res = await fetch('/api/webhooks/peakbuilders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error(`status ${res.status}`)
+    } catch (err) {
+      console.error('Lead submit failed:', err)
+      setSubmitError('Something went wrong. Please try again or call (619) 330-8185.')
+      setIsSubmitting(false)
+      submitGuardRef.current = false
+      return
+    }
+
     const host = typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '') : ''
     const onCustomDomain = host === 'peak-builders.net'
     router.push(onCustomDomain ? '/thank-you' : '/peakbuilders/thank-you')

@@ -43,13 +43,22 @@ export async function sendLeadEmail(lead: Lead) {
 
   const extraFields = ''
 
-  // Always send to these fixed recipients
-  const recipients = ['drorgigi11@gmail.com', 'renovisiondesign.build@gmail.com']
+  const RECIPIENTS_BY_CLIENT: Record<string, string[]> = {
+    renovision:   ['drorgigi11@gmail.com', 'renovisiondesign.build@gmail.com'],
+    peakbuilders: ['drorgigi11@gmail.com', 'Raphael@venado.life'],
+  }
+  const CLIENT_LABEL: Record<string, string> = {
+    renovision:   'Renovision',
+    peakbuilders: 'Peak Builders',
+  }
+  const clientKey = String(raw.client ?? 'renovision').toLowerCase()
+  const recipients = RECIPIENTS_BY_CLIENT[clientKey] ?? RECIPIENTS_BY_CLIENT.renovision
+  const clientLabel = CLIENT_LABEL[clientKey] ?? 'Lead'
 
   await resend.emails.send({
     from: 'GG Marketing <info@ggmarketing-s.com>',
     to: recipients,
-    subject: `New Lead from ${displaySource}`,
+    subject: `New ${clientLabel} Lead from ${displaySource}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:500px">
         <h2 style="color:#2563eb">New Lead!</h2>

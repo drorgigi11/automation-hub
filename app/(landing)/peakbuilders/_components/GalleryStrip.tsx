@@ -5,37 +5,37 @@ import Image from 'next/image'
 import { MapPin, Star } from 'lucide-react'
 
 interface GalleryItem {
-  family: string
+  name: string
   location: string
   src: string
   quote: string
 }
 
 const ITEMS: GalleryItem[] = [
-  { family: 'The Carl Family', location: 'La Jolla, San Diego', src: '/peakbuilders/gallery/carl.jpg', quote: 'Professional from the first call to the last nail. Easy to recommend.' },
-  { family: 'The Rem Family', location: 'Carmel Valley, San Diego', src: '/peakbuilders/gallery/rem.jpg', quote: 'Walked us through the quote and answered every question along the way.' },
-  { family: 'The Lanahan Family', location: 'Encinitas, San Diego', src: '/peakbuilders/gallery/lanahan.jpg', quote: 'From start to finish, the whole experience was smooth.' },
-  { family: 'The Holeva Family', location: 'Point Loma, San Diego', src: '/peakbuilders/gallery/holeva.jpg', quote: 'Quality work and the cleanup was perfect. Great crew.' },
-  { family: 'The Mizrachi Family', location: 'Del Mar, San Diego', src: '/peakbuilders/gallery/mizrachi.jpg', quote: 'Honest pricing, no pressure, no surprises. Just good work.' },
-  { family: 'The Diaz Family', location: 'Chula Vista, San Diego', src: '/peakbuilders/gallery/diaz.jpg', quote: 'They explained everything in plain English and didn’t rush us.' },
-  { family: 'The Gonzales Family', location: 'Mira Mesa, San Diego', src: '/peakbuilders/gallery/gonzales.jpg', quote: 'Came when they said they would and did exactly what they promised.' },
-  { family: 'The Weisbach Family', location: 'Rancho Bernardo, San Diego', src: '/peakbuilders/gallery/weisbach.jpg', quote: 'Couldn’t have asked for a better team. Highly recommend.' },
-  { family: 'The Sommer Family', location: 'Rancho Santa Fe, San Diego', src: '/peakbuilders/gallery/sommer.jpg', quote: 'Beautiful work. The roof looks better than we imagined.' },
-  { family: 'The Green Family', location: 'Carlsbad, San Diego', src: '/peakbuilders/gallery/green.jpg', quote: 'After dealing with other contractors, this was a breath of fresh air.' },
-  { family: 'The Fishbein Family', location: 'North Park, San Diego', src: '/peakbuilders/gallery/fishbein.jpg', quote: 'Top to bottom, a great experience. We’ll use them again.' },
-  { family: 'The Castillo Family', location: 'Scripps Ranch, San Diego', src: '/peakbuilders/gallery/castillo.jpg', quote: 'Fast, fair, and professional. That’s really all you can ask for.' },
-  { family: 'The Barry Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/barry.jpg', quote: 'Took the time to do it right. You can tell they care about their work.' },
-  { family: 'The Rendone Family', location: 'Poway, San Diego', src: '/peakbuilders/gallery/rendone.jpg', quote: 'The crew was respectful and easy to have around. Great workmanship.' },
-  { family: 'The Betts Family', location: 'Coronado, San Diego', src: '/peakbuilders/gallery/betts.jpg', quote: 'Showed up on time every day and left the property spotless.' },
-  { family: 'The Levy Family', location: 'Pacific Beach, San Diego', src: '/peakbuilders/gallery/levy.jpg', quote: 'Best contractor we’ve worked with. They actually return your calls.' },
-  { family: 'The Dang Family', location: 'Mission Hills, San Diego', src: '/peakbuilders/gallery/dang.jpg', quote: 'Made what we thought would be a stressful project feel easy.' },
-  { family: 'The Nguyen Family', location: 'Escondido, San Diego', src: '/peakbuilders/gallery/nguyen.jpg', quote: 'Honest people who do honest work. That’s rare these days.' },
-  { family: 'The Gray Family', location: 'Tierrasanta, San Diego', src: '/peakbuilders/gallery/gray.jpg', quote: 'Communication was great — we always knew what was happening.' },
-  { family: 'The Rowe Family', location: 'Bonita, San Diego', src: '/peakbuilders/gallery/rowe.jpg', quote: 'No upsells, no pressure. Just told us what we actually needed.' },
-  { family: 'The Saake Family', location: 'Ocean Beach, San Diego', src: '/peakbuilders/gallery/saake.jpg', quote: 'Stood behind their work and were a pleasure to deal with.' },
-  { family: 'The Hodges Family', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/hodges.jpg', quote: 'Friendly, professional, and the price was exactly what they quoted.' },
-  { family: 'The Ferrari Family', location: 'Hillcrest, San Diego', src: '/peakbuilders/gallery/ferrari.jpg', quote: 'The roof looks great and the whole process was painless.' },
-  { family: 'The Kitchen Family', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg', quote: 'We trusted them from the first conversation, and they delivered.' },
+  { name: 'James Carl', location: 'La Jolla, San Diego', src: '/peakbuilders/gallery/carl.jpg', quote: 'Professional from the first call to the last nail. Easy to recommend.' },
+  { name: 'David Rem', location: 'Carmel Valley, San Diego', src: '/peakbuilders/gallery/rem.jpg', quote: 'Walked us through the quote and answered every question along the way.' },
+  { name: 'Patrick Lanahan', location: 'Encinitas, San Diego', src: '/peakbuilders/gallery/lanahan.jpg', quote: 'From start to finish, the whole experience was smooth.' },
+  { name: 'Michael Holeva', location: 'Point Loma, San Diego', src: '/peakbuilders/gallery/holeva.jpg', quote: 'Quality work and the cleanup was perfect. Great crew.' },
+  { name: 'Daniel Mizrachi', location: 'Del Mar, San Diego', src: '/peakbuilders/gallery/mizrachi.jpg', quote: 'Honest pricing, no pressure, no surprises. Just good work.' },
+  { name: 'Carlos Diaz', location: 'Chula Vista, San Diego', src: '/peakbuilders/gallery/diaz.jpg', quote: 'They explained everything in plain English and didn’t rush us.' },
+  { name: 'Luis Gonzales', location: 'Mira Mesa, San Diego', src: '/peakbuilders/gallery/gonzales.jpg', quote: 'Came when they said they would and did exactly what they promised.' },
+  { name: 'Aaron Weisbach', location: 'Rancho Bernardo, San Diego', src: '/peakbuilders/gallery/weisbach.jpg', quote: 'Couldn’t have asked for a better team. Highly recommend.' },
+  { name: 'Eric Sommer', location: 'Rancho Santa Fe, San Diego', src: '/peakbuilders/gallery/sommer.jpg', quote: 'Beautiful work. The roof looks better than we imagined.' },
+  { name: 'Michael Green', location: 'Carlsbad, San Diego', src: '/peakbuilders/gallery/green.jpg', quote: 'After dealing with other contractors, this was a breath of fresh air.' },
+  { name: 'David Fishbein', location: 'North Park, San Diego', src: '/peakbuilders/gallery/fishbein.jpg', quote: 'Top to bottom, a great experience. We’ll use them again.' },
+  { name: 'Roberto Castillo', location: 'Scripps Ranch, San Diego', src: '/peakbuilders/gallery/castillo.jpg', quote: 'Fast, fair, and professional. That’s really all you can ask for.' },
+  { name: 'John Barry', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/barry.jpg', quote: 'Took the time to do it right. You can tell they care about their work.' },
+  { name: 'Anthony Rendone', location: 'Poway, San Diego', src: '/peakbuilders/gallery/rendone.jpg', quote: 'The crew was respectful and easy to have around. Great workmanship.' },
+  { name: 'William Betts', location: 'Coronado, San Diego', src: '/peakbuilders/gallery/betts.jpg', quote: 'Showed up on time every day and left the property spotless.' },
+  { name: 'Sarah Levy', location: 'Pacific Beach, San Diego', src: '/peakbuilders/gallery/levy.jpg', quote: 'Best contractor we’ve worked with. They actually return your calls.' },
+  { name: 'Kevin Dang', location: 'Mission Hills, San Diego', src: '/peakbuilders/gallery/dang.jpg', quote: 'Made what we thought would be a stressful project feel easy.' },
+  { name: 'Linh Nguyen', location: 'Escondido, San Diego', src: '/peakbuilders/gallery/nguyen.jpg', quote: 'Honest people who do honest work. That’s rare these days.' },
+  { name: 'Robert Gray', location: 'Tierrasanta, San Diego', src: '/peakbuilders/gallery/gray.jpg', quote: 'Communication was great — we always knew what was happening.' },
+  { name: 'Thomas Rowe', location: 'Bonita, San Diego', src: '/peakbuilders/gallery/rowe.jpg', quote: 'No upsells, no pressure. Just told us what we actually needed.' },
+  { name: 'Henry Saake', location: 'Ocean Beach, San Diego', src: '/peakbuilders/gallery/saake.jpg', quote: 'Stood behind their work and were a pleasure to deal with.' },
+  { name: 'James Hodges', location: 'Solana Beach, San Diego', src: '/peakbuilders/gallery/hodges.jpg', quote: 'Friendly, professional, and the price was exactly what they quoted.' },
+  { name: 'Marco Ferrari', location: 'Hillcrest, San Diego', src: '/peakbuilders/gallery/ferrari.jpg', quote: 'The roof looks great and the whole process was painless.' },
+  { name: 'Brian Kitchen', location: 'El Cajon, San Diego', src: '/peakbuilders/gallery/kitchen.jpg', quote: 'We trusted them from the first conversation, and they delivered.' },
 ]
 
 const CARD_WIDTH = 260
@@ -243,7 +243,7 @@ export default function GalleryStrip() {
       >
         <div className="pb-marquee-track" ref={trackRef}>
           {LOOP.map((item, i) => (
-            <GalleryCard key={`${item.family}-${i}`} item={item} priority={i < 3} />
+            <GalleryCard key={`${item.name}-${i}`} item={item} priority={i < 3} />
           ))}
         </div>
       </div>
@@ -268,7 +268,7 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
       <div style={{ position: 'relative', width: CARD_WIDTH, height: CARD_HEIGHT, background: '#e5e7eb' }}>
         <Image
           src={item.src}
-          alt={`Roof project — ${item.family}`}
+          alt={`Roof project — ${item.name}`}
           fill
           sizes="260px"
           style={{ objectFit: 'cover' }}
@@ -298,7 +298,7 @@ function GalleryCard({ item, priority }: { item: GalleryItem; priority: boolean 
             lineHeight: 1.3,
             marginBottom: 2,
           }}>
-            {item.family}
+            {item.name}
           </div>
           <div style={{
             fontSize: 11.5,

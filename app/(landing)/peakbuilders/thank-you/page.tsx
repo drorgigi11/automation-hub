@@ -1,10 +1,40 @@
+'use client'
+
+import { useEffect } from 'react'
 import Header from '../_components/Header'
 import { Phone, CheckCircle } from 'lucide-react'
+
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void
+  }
+}
 
 const phoneNumber = '(619) 330-8185'
 const phoneLink = 'tel:+16193308185'
 
 export default function PeakBuildersThankYou() {
+  useEffect(() => {
+    let tracked = false
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+
+    const trackLead = () => {
+      if (!tracked && typeof window.fbq === 'function') {
+        window.fbq('track', 'Lead')
+        tracked = true
+        timeouts.forEach(clearTimeout)
+        return true
+      }
+      return false
+    }
+
+    if (trackLead()) return
+
+    const retryDelays = [100, 300, 500, 1000, 2000]
+    retryDelays.forEach(delay => { timeouts.push(setTimeout(trackLead, delay)) })
+    return () => timeouts.forEach(clearTimeout)
+  }, [])
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--pb-bg)' }}>
       <Header />
