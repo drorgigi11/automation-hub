@@ -305,6 +305,17 @@ export default function LeadForm() {
               buttonText={isSubmitting ? 'Submitting...' : 'Get My Free Estimate'}
               isLoading={isSubmitting}
             />
+            {submitError && (
+              <p style={{
+                fontSize: 13,
+                color: 'var(--pb-destructive)',
+                marginTop: 12,
+                textAlign: 'center',
+                fontWeight: 500,
+              }}>
+                {submitError}
+              </p>
+            )}
             <p style={{
               fontSize: 11,
               color: 'var(--pb-muted-fg)',
