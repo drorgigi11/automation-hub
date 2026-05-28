@@ -3,6 +3,16 @@ import { Lead, LeadSource } from './supabase'
 import { appendLeadToSheet, ensureSheetHeaders } from './google-sheets'
 import { sendLeadEmail } from './send-lead-email'
 
+// Keep in sync with the same helper in app/api/admin/resync-leads/route.ts.
+// Until sheet_connections has a real client column, the connection's `name`
+// is the routing key — preserving total per-client isolation.
+function clientForConnection(connName: string | null | undefined): string {
+  const n = (connName ?? '').toLowerCase()
+  if (n.includes('peak')) return 'peakbuilders'
+  if (n.includes('patnet')) return 'patnetpro'
+  return 'renovision'
+}
+
 interface RawLead {
   name?: string
   full_name?: string
@@ -117,11 +127,17 @@ export async function processIncomingLead(
     return lead
   }
 
-  // 2. Find matching sheet connections for this source
-  const { data: connections } = await supabaseAdmin
+  // 2. Find matching sheet connections for this source AND this client
+  const leadClient = String(
+    ((lead.raw_data ?? {}) as Record<string, unknown>).client ?? 'renovision'
+  ).toLowerCase()
+  const { data: allConnections } = await supabaseAdmin
     .from('sheet_connections')
     .select('*')
     .contains('sources', [source])
+  const connections = (allConnections ?? []).filter(
+    (c) => clientForConnection(c.name) === leadClient
+  )
 
   if (connections && connections.length > 0) {
     const MAX_RETRIES = 3

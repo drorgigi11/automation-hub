@@ -3,6 +3,22 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { appendLeadToSheet, ensureSheetHeaders } from '@/lib/google-sheets'
 import { Lead } from '@/lib/supabase'
 
+// Sheet connections are shared across clients via the `sources` array, so a
+// Peak Builders lead (source='lovable') would otherwise sync into Renovision's
+// sheet. Until the table has a real client column, derive the connection's
+// client from its name.
+function clientForConnection(connName: string | null | undefined): string {
+  const n = (connName ?? '').toLowerCase()
+  if (n.includes('peak')) return 'peakbuilders'
+  if (n.includes('patnet')) return 'patnetpro'
+  return 'renovision'
+}
+
+function clientForLead(lead: Lead): string {
+  const raw = (lead.raw_data ?? {}) as Record<string, unknown>
+  return String(raw.client ?? 'renovision').toLowerCase()
+}
+
 export async function GET(req: NextRequest) {
   // Protect with CRON_SECRET so it's not publicly accessible
   const authHeader = req.headers.get('authorization')
@@ -38,14 +54,23 @@ export async function GET(req: NextRequest) {
   let failed = 0
   const errors: string[] = []
 
+  let skipped = 0
   for (const lead of leads as Lead[]) {
+    const leadClient = clientForLead(lead)
     const matching = connections.filter(c =>
-      Array.isArray(c.sources) && c.sources.includes(lead.source)
+      Array.isArray(c.sources) &&
+      c.sources.includes(lead.source) &&
+      clientForConnection(c.name) === leadClient
     )
 
     if (matching.length === 0) {
-      errors.push(`Lead ${lead.id} (${lead.source}): no matching sheet connection`)
-      failed++
+      // No sheet configured for this client (e.g., Peak Builders has no sheet
+      // yet). Mark synced so the cron stops retrying — it's not a failure.
+      await supabaseAdmin
+        .from('leads')
+        .update({ synced_to_sheets: true })
+        .eq('id', lead.id)
+      skipped++
       continue
     }
 
@@ -76,6 +101,7 @@ export async function GET(req: NextRequest) {
     ok: true,
     total: leads.length,
     synced,
+    skipped,
     failed,
     errors: errors.length > 0 ? errors : undefined,
   })
