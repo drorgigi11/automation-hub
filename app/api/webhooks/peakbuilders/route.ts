@@ -32,6 +32,14 @@ interface IncomingLead {
   gclid?: string
   ttclid?: string
   msclkid?: string
+  // Ad-platform fields (FB/Google), accepted under multiple aliases
+  campaign?: string
+  campaign_name?: string
+  ad_set?: string
+  adset?: string
+  adset_name?: string
+  ad?: string
+  ad_name?: string
   partial_id?: string
 }
 
@@ -53,6 +61,9 @@ export async function POST(req: NextRequest) {
   const zip = (body.zip ?? body.zip_code ?? '').toString().trim() || null
   const projectType = (body.project_type ?? body.help_type ?? '').toString().trim() || null
   const timeline = (body.timeline ?? '').toString().trim() || null
+  const campaignName = (body.campaign_name ?? body.campaign ?? '').toString().trim() || null
+  const adsetName = (body.adset_name ?? body.ad_set ?? body.adset ?? '').toString().trim() || null
+  const adName = (body.ad_name ?? body.ad ?? '').toString().trim() || null
 
   if (!phone && !email) {
     return NextResponse.json({ error: 'phone_or_email_required' }, { status: 400 })
@@ -66,6 +77,9 @@ export async function POST(req: NextRequest) {
     zip_code: zip,
     project_type: projectType,
     timeline,
+    campaign_name: campaignName,
+    adset_name: adsetName,
+    ad_name: adName,
     client: 'peakbuilders',
     received_at: new Date().toISOString(),
   }
@@ -126,6 +140,12 @@ export async function POST(req: NextRequest) {
           utm_content: body.utm_content ?? null,
           utm_term: body.utm_term ?? null,
           utm_id: body.utm_id ?? null,
+          campaign: campaignName,
+          campaign_name: campaignName,
+          ad_set: adsetName,
+          adset_name: adsetName,
+          ad: adName,
+          ad_name: adName,
           fbclid: body.fbclid ?? null,
           gclid: body.gclid ?? null,
           ttclid: body.ttclid ?? null,
