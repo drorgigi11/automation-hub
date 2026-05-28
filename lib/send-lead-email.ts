@@ -23,15 +23,19 @@ export async function sendLeadEmail(lead: Lead) {
   const interestedMultiple = raw.interested_multiple ?? raw.interestedMultiple
   const formAnswer = raw.interested ??
     (Array.isArray(interestedMultiple) ? (interestedMultiple as string[]).join(', ') : interestedMultiple) ?? ''
-  const zipCode = raw.zip_code ?? raw.zipCode ?? ''
+  const zipCode = raw.zip_code ?? raw.zipCode ?? raw.zip ?? ''
+  const projectType = raw.project_type ?? raw.help_type ?? ''
+  const timeline = raw.timeline ?? ''
 
   const rows = [
-    lead.name    && `<tr><td><b>Name</b></td><td>${lead.name}</td></tr>`,
-    lead.email   && `<tr><td><b>Email</b></td><td>${lead.email}</td></tr>`,
-    lead.phone   && `<tr><td><b>Phone</b></td><td>${lead.phone}</td></tr>`,
-    zipCode      && `<tr><td><b>Zip Code</b></td><td>${zipCode}</td></tr>`,
-    formAnswer   && `<tr><td><b>Interested In</b></td><td>${formAnswer}</td></tr>`,
-    lead.message && `<tr><td><b>Message</b></td><td>${lead.message}</td></tr>`,
+    lead.name     && `<tr><td><b>Name</b></td><td>${lead.name}</td></tr>`,
+    lead.email    && `<tr><td><b>Email</b></td><td>${lead.email}</td></tr>`,
+    lead.phone    && `<tr><td><b>Phone</b></td><td>${lead.phone}</td></tr>`,
+    zipCode       && `<tr><td><b>Zip Code</b></td><td>${zipCode}</td></tr>`,
+    projectType   && `<tr><td><b>Project Type</b></td><td>${projectType}</td></tr>`,
+    timeline      && `<tr><td><b>Timeline</b></td><td>${timeline}</td></tr>`,
+    formAnswer    && `<tr><td><b>Interested In</b></td><td>${formAnswer}</td></tr>`,
+    lead.message  && `<tr><td><b>Message</b></td><td>${lead.message}</td></tr>`,
     raw.ownership && `<tr><td><b>Ownership</b></td><td>${raw.ownership}</td></tr>`,
   ].filter(Boolean).join('\n')
 

@@ -4,19 +4,34 @@ import { sendLeadEmail } from '@/lib/send-lead-email'
 import type { Lead } from '@/lib/supabase'
 
 interface IncomingLead {
+  // Legacy field names (from internal landing page form)
   name?: string
-  email?: string
-  phone?: string
   zip_code?: string
   help_type?: string
+  // New field names (from external quiz/ad webhook)
+  first_name?: string
+  last_name?: string
+  zip?: string
+  project_type?: string
+  timeline?: string
+  // Shared
+  email?: string
+  phone?: string
   submitted_at?: string
   page_url?: string
+  landing_page?: string
+  referrer?: string
+  source?: string
   utm_source?: string
   utm_medium?: string
   utm_campaign?: string
   utm_content?: string
   utm_term?: string
+  utm_id?: string
   fbclid?: string
+  gclid?: string
+  ttclid?: string
+  msclkid?: string
   partial_id?: string
 }
 
@@ -28,9 +43,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 })
   }
 
-  const name = (body.name ?? '').toString().trim() || null
+  const composedName = [body.first_name, body.last_name]
+    .map((s) => (s ?? '').toString().trim())
+    .filter(Boolean)
+    .join(' ')
+  const name = (body.name ?? '').toString().trim() || composedName || null
   const email = (body.email ?? '').toString().trim().toLowerCase() || null
   const phone = (body.phone ?? '').toString().trim() || null
+  const zip = (body.zip ?? body.zip_code ?? '').toString().trim() || null
+  const projectType = (body.project_type ?? body.help_type ?? '').toString().trim() || null
+  const timeline = (body.timeline ?? '').toString().trim() || null
 
   if (!phone && !email) {
     return NextResponse.json({ error: 'phone_or_email_required' }, { status: 400 })
@@ -40,6 +62,10 @@ export async function POST(req: NextRequest) {
   // landing-page bucket; client tag distinguishes Peak Builders from Renovision).
   const rawData = {
     ...body,
+    // Normalized aliases so downstream (email, sheets) can rely on stable keys
+    zip_code: zip,
+    project_type: projectType,
+    timeline,
     client: 'peakbuilders',
     received_at: new Date().toISOString(),
   }
@@ -84,19 +110,28 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           full_name: name,
+          first_name: body.first_name ?? null,
+          last_name: body.last_name ?? null,
           email,
           phone,
-          zip_code: body.zip_code ?? null,
-          help_type: body.help_type ?? null,
+          zip,
+          project_type: projectType,
+          timeline,
           page_url: body.page_url ?? null,
+          landing_page: body.landing_page ?? null,
+          referrer: body.referrer ?? null,
           utm_source: body.utm_source ?? null,
           utm_medium: body.utm_medium ?? null,
           utm_campaign: body.utm_campaign ?? null,
           utm_content: body.utm_content ?? null,
           utm_term: body.utm_term ?? null,
+          utm_id: body.utm_id ?? null,
           fbclid: body.fbclid ?? null,
+          gclid: body.gclid ?? null,
+          ttclid: body.ttclid ?? null,
+          msclkid: body.msclkid ?? null,
           submitted_at: body.submitted_at ?? new Date().toISOString(),
-          source: 'peak-builders.net',
+          source: body.source ?? 'peak-builders.net',
         }),
       })
       if (!ghlRes.ok) {
