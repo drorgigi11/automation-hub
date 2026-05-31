@@ -206,15 +206,27 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
         )
         return (
           <div key="step1" className="pb-slide-up">
-            <h2 className="pb-serif" style={{
+            <h2 style={{
+              fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 'clamp(1.5rem, 4vw, 1.85rem)',
               fontWeight: 700,
-              marginBottom: 18,
+              marginBottom: isFinancing ? 8 : 18,
               lineHeight: 1.2,
               color: 'var(--pb-card-fg)',
+              letterSpacing: '-0.01em',
             }}>
               {headline}
             </h2>
+            {isFinancing && (
+              <p style={{
+                fontSize: 14,
+                color: 'var(--pb-muted-fg)',
+                marginBottom: 18,
+                lineHeight: 1.5,
+              }}>
+                Answer a few quick questions to see if you qualify.
+              </p>
+            )}
             <p style={{
               fontSize: 'clamp(1.05rem, 2.6vw, 1.2rem)',
               fontWeight: 700,
