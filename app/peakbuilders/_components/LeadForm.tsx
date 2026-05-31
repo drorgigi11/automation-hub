@@ -216,11 +216,11 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               {headline}
             </h2>
             <p style={{
-              fontSize: 15,
-              fontWeight: 600,
+              fontSize: 'clamp(1.05rem, 2.6vw, 1.2rem)',
+              fontWeight: 700,
               color: 'var(--pb-card-fg)',
-              marginBottom: 12,
-              lineHeight: 1.4,
+              marginBottom: 14,
+              lineHeight: 1.35,
             }}>
               What do you need help with?
             </p>
@@ -358,15 +358,6 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
                 {submitError}
               </p>
             )}
-            <p style={{
-              fontSize: 11,
-              color: 'var(--pb-muted-fg)',
-              marginTop: 16,
-              lineHeight: 1.5,
-              textAlign: 'center',
-            }}>
-              By submitting, you agree to be contacted by Peak Builders &amp; Roofers regarding your roofing consultation. Message/data rates may apply.
-            </p>
           </div>
         )
 
