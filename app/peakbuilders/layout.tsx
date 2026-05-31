@@ -44,13 +44,13 @@ export default function PeakBuildersLayout({ children }: { children: React.React
             --pb-card: #ffffff;
             --pb-card-fg: #0A1F3D;
             --pb-body-fg: #334155;
-            --pb-primary: #F5C518;
-            --pb-primary-hover: #FFD93A;
-            --pb-primary-fg: #0A1F3D;
+            --pb-primary: #15803d;
+            --pb-primary-hover: #166534;
+            --pb-primary-fg: #ffffff;
             --pb-muted-fg: #64748b;
             --pb-input-bg: #ffffff;
             --pb-input-border: #e2e8f0;
-            --pb-input-border-focus: #F5C518;
+            --pb-input-border-focus: #15803d;
             --pb-destructive: #dc2626;
             --pb-divider: #e2e8f0;
             --pb-header-bg: #000000;
@@ -91,8 +91,8 @@ export default function PeakBuildersLayout({ children }: { children: React.React
           }
           .pb-btn-form:hover {
             border-color: var(--pb-primary);
-            background: #fffdf5;
-            box-shadow: 0 2px 12px rgba(245,197,24,0.18);
+            background: #f6fbf7;
+            box-shadow: 0 2px 12px rgba(21,128,61,0.18);
           }
           .pb-btn-selected {
             background: var(--pb-primary) !important;
@@ -106,12 +106,12 @@ export default function PeakBuildersLayout({ children }: { children: React.React
             background: var(--pb-primary); color: var(--pb-primary-fg);
             font-size: 16px; font-weight: 700; transition: all 0.2s; gap: 8px;
             letter-spacing: 0.01em;
-            box-shadow: 0 4px 16px rgba(245,197,24,0.40);
+            box-shadow: 0 4px 16px rgba(21,128,61,0.40);
           }
           .pb-btn-cta:hover {
             background: var(--pb-primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 8px 22px rgba(245,197,24,0.50);
+            box-shadow: 0 8px 22px rgba(21,128,61,0.50);
           }
           .pb-btn-cta:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
           .pb-input {
@@ -123,7 +123,7 @@ export default function PeakBuildersLayout({ children }: { children: React.React
           .pb-input::placeholder { color: #94a3b8; }
           .pb-input:focus {
             border-color: var(--pb-input-border-focus);
-            box-shadow: 0 0 0 3px rgba(245,197,24,0.18);
+            box-shadow: 0 0 0 3px rgba(21,128,61,0.18);
           }
           .pb-input-error { border-color: var(--pb-destructive) !important; }
           .pb-badge {

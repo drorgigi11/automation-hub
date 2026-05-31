@@ -53,12 +53,7 @@ const DIRECTION_LOCK_PX = 6      // touch dx threshold before we capture horizon
 // Duplicate the items so wrapping by SET_WIDTH lands on visually identical content.
 const LOOP = [...ITEMS, ...ITEMS]
 
-interface GalleryStripProps {
-  variant?: 'standard' | 'financing'
-}
-
-export default function GalleryStrip({ variant = 'standard' }: GalleryStripProps = {}) {
-  const cityOnly = variant === 'financing'
+export default function GalleryStrip() {
   const trackRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(0)            // current translate offset (positive = scrolled right)
   const velocityRef = useRef(0)          // px/sec — for inertia after release
@@ -250,7 +245,7 @@ export default function GalleryStrip({ variant = 'standard' }: GalleryStripProps
           {LOOP.map((item, i) => (
             <GalleryCard
               key={`${item.name}-${i}`}
-              item={cityOnly ? { ...item, location: 'San Diego' } : item}
+              item={{ ...item, location: 'San Diego' }}
               priority={i < 3}
             />
           ))}
