@@ -53,7 +53,12 @@ const DIRECTION_LOCK_PX = 6      // touch dx threshold before we capture horizon
 // Duplicate the items so wrapping by SET_WIDTH lands on visually identical content.
 const LOOP = [...ITEMS, ...ITEMS]
 
-export default function GalleryStrip() {
+interface GalleryStripProps {
+  variant?: 'standard' | 'financing'
+}
+
+export default function GalleryStrip({ variant = 'standard' }: GalleryStripProps = {}) {
+  const cityOnly = variant === 'financing'
   const trackRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(0)            // current translate offset (positive = scrolled right)
   const velocityRef = useRef(0)          // px/sec — for inertia after release
@@ -243,7 +248,11 @@ export default function GalleryStrip() {
       >
         <div className="pb-marquee-track" ref={trackRef}>
           {LOOP.map((item, i) => (
-            <GalleryCard key={`${item.name}-${i}`} item={item} priority={i < 3} />
+            <GalleryCard
+              key={`${item.name}-${i}`}
+              item={cityOnly ? { ...item, location: 'San Diego' } : item}
+              priority={i < 3}
+            />
           ))}
         </div>
       </div>

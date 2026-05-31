@@ -24,8 +24,8 @@ export default function PeakBuildersFinancingLanding() {
           <LeadForm variant="financing" />
         </div>
       </main>
-      <GalleryStrip />
-      <BottomCta />
+      <GalleryStrip variant="financing" />
+      <BottomCta variant="financing" />
       <footer style={{
         padding: '20px 24px',
         textAlign: 'center',

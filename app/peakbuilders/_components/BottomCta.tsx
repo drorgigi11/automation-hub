@@ -4,8 +4,13 @@ import { useEffect, useState } from 'react'
 import { ArrowRight, X } from 'lucide-react'
 import LeadForm from './LeadForm'
 
-export default function BottomCta() {
+interface BottomCtaProps {
+  variant?: 'standard' | 'financing'
+}
+
+export default function BottomCta({ variant = 'standard' }: BottomCtaProps = {}) {
   const [open, setOpen] = useState(false)
+  const buttonText = variant === 'financing' ? 'Check if You Qualify' : 'Get My Free Estimate'
 
   useEffect(() => {
     if (!open) return
@@ -38,7 +43,7 @@ export default function BottomCta() {
             padding: '18px 28px',
           }}
         >
-          Get My Free Estimate
+          {buttonText}
           <ArrowRight size={18} />
         </button>
       </section>
@@ -98,7 +103,7 @@ export default function BottomCta() {
             >
               <X size={20} />
             </button>
-            <LeadForm />
+            <LeadForm variant={variant} />
           </div>
         </div>
       )}

@@ -151,31 +151,43 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
     </div>
   )
 
-  const renderBadges = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
-      <div className="pb-badge">
-        <div className="pb-badge-icon"><Home size={14} /></div>
-        <div>
-          <div className="pb-badge-title">2,100+ Roofs Completed in San Diego</div>
-          <div className="pb-badge-sub">Local roofing experience homeowners can trust.</div>
+  const renderBadges = () => {
+    const isFinancing = variant === 'financing'
+    const financeBadge = isFinancing
+      ? {
+          title: 'Roof Replacement from $179/mo',
+          sub: 'Affordable monthly payments — no upfront cost.',
+        }
+      : {
+          title: '$0 Down & 0% Interest Financing Options',
+          sub: 'Get started without paying upfront.',
+        }
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
+        <div className="pb-badge">
+          <div className="pb-badge-icon"><Home size={14} /></div>
+          <div>
+            <div className="pb-badge-title">2,100+ Roofs Completed in San Diego</div>
+            <div className="pb-badge-sub">Local roofing experience homeowners can trust.</div>
+          </div>
+        </div>
+        <div className="pb-badge">
+          <div className="pb-badge-icon"><DollarSign size={14} /></div>
+          <div>
+            <div className="pb-badge-title">{financeBadge.title}</div>
+            <div className="pb-badge-sub">{financeBadge.sub}</div>
+          </div>
+        </div>
+        <div className="pb-badge">
+          <div className="pb-badge-icon"><ShieldCheck size={14} /></div>
+          <div>
+            <div className="pb-badge-title">The Longest Roofing Warranty in San Diego</div>
+            <div className="pb-badge-sub">Lifetime shingles warranty + 30-year labor warranty.</div>
+          </div>
         </div>
       </div>
-      <div className="pb-badge">
-        <div className="pb-badge-icon"><DollarSign size={14} /></div>
-        <div>
-          <div className="pb-badge-title">$0 Down &amp; 0% Interest Financing Options</div>
-          <div className="pb-badge-sub">Get started without paying upfront.</div>
-        </div>
-      </div>
-      <div className="pb-badge">
-        <div className="pb-badge-icon"><ShieldCheck size={14} /></div>
-        <div>
-          <div className="pb-badge-title">The Longest Roofing Warranty in San Diego</div>
-          <div className="pb-badge-sub">Lifetime shingles warranty + 30-year labor warranty.</div>
-        </div>
-      </div>
-    </div>
-  )
+    )
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -183,9 +195,8 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
         const isFinancing = variant === 'financing'
         const headline = isFinancing ? (
           <>
-            Check if You Qualify for{' '}
-            <span style={{ color: 'var(--pb-primary)' }}>$0 Down, 0% Interest</span>{' '}
-            Financing
+            Check if You Qualify for Roof Replacement with{' '}
+            <span style={{ color: 'var(--pb-primary)' }}>No Upfront Cost &amp; 0% Interest</span>
           </>
         ) : (
           <>
