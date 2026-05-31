@@ -18,7 +18,13 @@ const HELP_OPTIONS = [
   { value: 'not-sure', label: 'Not Sure Yet' },
 ]
 
-export default function LeadForm() {
+type LeadFormVariant = 'standard' | 'financing'
+
+interface LeadFormProps {
+  variant?: LeadFormVariant
+}
+
+export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState<FormData>({
@@ -97,6 +103,7 @@ export default function LeadForm() {
       phone: data.phone,
       zip_code: data.zipCode,
       help_type: data.helpType,
+      landing_variant: variant,
       page_url: typeof window !== 'undefined' ? window.location.href : null,
       utm_source: params.get('utm_source'),
       utm_medium: params.get('utm_medium'),
@@ -172,7 +179,22 @@ export default function LeadForm() {
 
   const renderStep = () => {
     switch (step) {
-      case 1:
+      case 1: {
+        const isFinancing = variant === 'financing'
+        const headline = isFinancing ? (
+          <>
+            Check if You Qualify for{' '}
+            <span style={{ color: 'var(--pb-primary)' }}>$0 Down, 0% Interest</span>{' '}
+            Financing
+          </>
+        ) : (
+          <>
+            Get Your <span style={{ color: 'var(--pb-primary)' }}>Free</span> Roof Estimate &amp; Consultation
+          </>
+        )
+        const subtitle = isFinancing
+          ? 'Enter your ZIP code to check eligibility in your area.'
+          : 'Enter your ZIP code to see if we service your area.'
         return (
           <div key="step1" className="pb-slide-up">
             <h2 className="pb-serif" style={{
@@ -182,10 +204,10 @@ export default function LeadForm() {
               lineHeight: 1.2,
               color: 'var(--pb-card-fg)',
             }}>
-              Get Your <span style={{ color: 'var(--pb-primary)' }}>Free</span> Roof Estimate &amp; Consultation
+              {headline}
             </h2>
             <p style={{ fontSize: 14, color: 'var(--pb-muted-fg)', marginBottom: 22, lineHeight: 1.5 }}>
-              Enter your ZIP code to see if we service your area.
+              {subtitle}
             </p>
             <InputStep
               label="ZIP Code"
@@ -200,6 +222,7 @@ export default function LeadForm() {
             {renderBadges()}
           </div>
         )
+      }
 
       case 2:
         return (

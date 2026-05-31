@@ -40,6 +40,8 @@ interface IncomingLead {
   adset_name?: string
   ad?: string
   ad_name?: string
+  // Which Peak Builders landing variant the lead came from (e.g. 'financing')
+  landing_variant?: string
   partial_id?: string
 }
 
@@ -152,6 +154,7 @@ export async function POST(req: NextRequest) {
           msclkid: body.msclkid ?? null,
           submitted_at: body.submitted_at ?? new Date().toISOString(),
           source: body.source ?? 'peak-builders.net',
+          landing_variant: body.landing_variant ?? null,
         }),
       })
       if (!ghlRes.ok) {
