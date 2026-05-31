@@ -192,18 +192,38 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
 
   const renderStep = () => {
     switch (step) {
-      case 1:
+      case 1: {
+        const isFinancing = variant === 'financing'
+        const headline = isFinancing ? (
+          <>
+            Check if You Qualify for Roof Replacement with{' '}
+            <span style={{ color: 'var(--pb-primary)' }}>No Upfront Cost &amp; 0% Interest</span>
+          </>
+        ) : (
+          <>
+            Get Your <span style={{ color: 'var(--pb-primary)' }}>Free</span> Roof Estimate &amp; Consultation
+          </>
+        )
         return (
           <div key="step1" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.5rem, 4vw, 1.85rem)',
               fontWeight: 700,
-              marginBottom: 22,
+              marginBottom: 18,
               lineHeight: 1.2,
               color: 'var(--pb-card-fg)',
             }}>
-              What do you need help with?
+              {headline}
             </h2>
+            <p style={{
+              fontSize: 15,
+              fontWeight: 600,
+              color: 'var(--pb-card-fg)',
+              marginBottom: 12,
+              lineHeight: 1.4,
+            }}>
+              What do you need help with?
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {HELP_OPTIONS.map(opt => (
                 <button
@@ -219,36 +239,20 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
             {renderBadges()}
           </div>
         )
+      }
 
-      case 2: {
-        const isFinancing = variant === 'financing'
-        const headline = isFinancing ? (
-          <>
-            Check if You Qualify for Roof Replacement with{' '}
-            <span style={{ color: 'var(--pb-primary)' }}>No Upfront Cost &amp; 0% Interest</span>
-          </>
-        ) : (
-          <>
-            Get Your <span style={{ color: 'var(--pb-primary)' }}>Free</span> Roof Estimate &amp; Consultation
-          </>
-        )
-        const subtitle = isFinancing
-          ? 'Enter your ZIP code to check eligibility in your area.'
-          : 'Enter your ZIP code to see if we service your area.'
+      case 2:
         return (
           <div key="step2" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
-              marginBottom: 8,
+              marginBottom: 22,
               lineHeight: 1.25,
               color: 'var(--pb-card-fg)',
             }}>
-              {headline}
+              What&apos;s your ZIP code?
             </h2>
-            <p style={{ fontSize: 14, color: 'var(--pb-muted-fg)', marginBottom: 22, lineHeight: 1.5 }}>
-              {subtitle}
-            </p>
             <InputStep
               label="ZIP Code"
               placeholder="Enter your 5-digit ZIP code"
@@ -261,7 +265,6 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
             />
           </div>
         )
-      }
 
       case 3:
         return (
