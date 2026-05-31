@@ -5,8 +5,8 @@ import GalleryStrip from '../_components/GalleryStrip'
 import BottomCta from '../_components/BottomCta'
 
 export const metadata: Metadata = {
-  title: 'Peak Builders — Check if You Qualify for $0 Down, 0% Interest Financing',
-  description: 'See if you qualify for $0 down, 0% interest roofing financing in San Diego. 2,100+ roofs completed.',
+  title: 'Peak Builders — Check if You Qualify for Roof Replacement with No Upfront Cost',
+  description: 'Roof replacement from $179/mo in San Diego — no upfront cost, 0% interest. 2,100+ roofs completed.',
 }
 
 export default function PeakBuildersFinancingLanding() {
