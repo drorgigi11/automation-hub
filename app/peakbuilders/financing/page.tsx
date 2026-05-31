@@ -11,7 +11,27 @@ export const metadata: Metadata = {
 
 export default function PeakBuildersFinancingLanding() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--pb-bg)' }}>
+    <div className="pb-financing" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--pb-bg)' }}>
+      <style>{`
+        .pb-financing {
+          --pb-primary: #15803d;
+          --pb-primary-hover: #166534;
+          --pb-primary-fg: #ffffff;
+        }
+        .pb-financing .pb-btn-cta {
+          box-shadow: 0 4px 16px rgba(21,128,61,0.40);
+        }
+        .pb-financing .pb-btn-cta:hover {
+          box-shadow: 0 8px 22px rgba(21,128,61,0.50);
+        }
+        .pb-financing .pb-input:focus {
+          box-shadow: 0 0 0 3px rgba(21,128,61,0.18);
+        }
+        .pb-financing .pb-btn-form:hover {
+          background: #f6fbf7;
+          box-shadow: 0 2px 12px rgba(21,128,61,0.18);
+        }
+      `}</style>
       <Header />
       <main style={{
         flex: 1,

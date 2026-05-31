@@ -27,6 +27,7 @@ interface LeadFormProps {
 export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const continueText = variant === 'financing' ? 'Check if You Qualify' : 'Continue'
   const [formData, setFormData] = useState<FormData>({
     zipCode: '',
     helpType: '',
@@ -228,7 +229,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               onSubmit={v => handleInputSubmit('zipCode', v)}
               inputMode="numeric"
               maxLength={5}
-              buttonText="Continue"
+              buttonText={continueText}
             />
             {renderBadges()}
           </div>
@@ -280,7 +281,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               defaultValue={formData.name}
               error={errors.name}
               onSubmit={v => handleInputSubmit('name', v)}
-              buttonText="Continue"
+              buttonText={continueText}
             />
           </div>
         )
@@ -310,7 +311,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               onSubmit={v => handleInputSubmit('email', v)}
               type="email"
               inputMode="email"
-              buttonText="Continue"
+              buttonText={continueText}
             />
           </div>
         )
