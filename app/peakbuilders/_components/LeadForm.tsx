@@ -298,7 +298,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               What&apos;s your email address?
             </h2>
             <p style={{ fontSize: 14, color: 'var(--pb-muted-fg)', marginBottom: 22, lineHeight: 1.5 }}>
-              We&apos;ll use this to send your consultation details.
+              {variant === 'financing'
+                ? "We'll use this to send your qualification details."
+                : "We'll use this to send your consultation details."}
             </p>
             <InputStep
               label="Email Address"
@@ -326,7 +328,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               What&apos;s the best number to reach you?
             </h2>
             <p style={{ fontSize: 14, color: 'var(--pb-muted-fg)', marginBottom: 22, lineHeight: 1.5 }}>
-              A Peak Builders roofing specialist will contact you to schedule your free roof estimate &amp; consultation.
+              {variant === 'financing'
+                ? 'A Peak Builders roofing specialist will contact you with your financing qualification results and estimate.'
+                : <>A Peak Builders roofing specialist will contact you to schedule your free roof estimate &amp; consultation.</>}
             </p>
             <InputStep
               label="Phone Number"
