@@ -192,7 +192,35 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
 
   const renderStep = () => {
     switch (step) {
-      case 1: {
+      case 1:
+        return (
+          <div key="step1" className="pb-slide-up">
+            <h2 className="pb-serif" style={{
+              fontSize: 'clamp(1.5rem, 4vw, 1.85rem)',
+              fontWeight: 700,
+              marginBottom: 22,
+              lineHeight: 1.2,
+              color: 'var(--pb-card-fg)',
+            }}>
+              What do you need help with?
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {HELP_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`pb-btn-form ${formData.helpType === opt.value ? 'pb-btn-selected' : ''}`}
+                  onClick={() => handleOptionSelect(opt.value)}
+                >
+                  {opt.label}
+                  <ArrowRight size={16} style={{ opacity: 0.4 }} />
+                </button>
+              ))}
+            </div>
+            {renderBadges()}
+          </div>
+        )
+
+      case 2: {
         const isFinancing = variant === 'financing'
         const headline = isFinancing ? (
           <>
@@ -208,12 +236,12 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
           ? 'Enter your ZIP code to check eligibility in your area.'
           : 'Enter your ZIP code to see if we service your area.'
         return (
-          <div key="step1" className="pb-slide-up">
+          <div key="step2" className="pb-slide-up">
             <h2 className="pb-serif" style={{
-              fontSize: 'clamp(1.5rem, 4vw, 1.85rem)',
+              fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
               marginBottom: 8,
-              lineHeight: 1.2,
+              lineHeight: 1.25,
               color: 'var(--pb-card-fg)',
             }}>
               {headline}
@@ -231,37 +259,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               maxLength={5}
               buttonText={continueText}
             />
-            {renderBadges()}
           </div>
         )
       }
-
-      case 2:
-        return (
-          <div key="step2" className="pb-slide-up">
-            <h2 className="pb-serif" style={{
-              fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
-              fontWeight: 700,
-              marginBottom: 22,
-              lineHeight: 1.25,
-              color: 'var(--pb-card-fg)',
-            }}>
-              What do you need help with?
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {HELP_OPTIONS.map(opt => (
-                <button
-                  key={opt.value}
-                  className={`pb-btn-form ${formData.helpType === opt.value ? 'pb-btn-selected' : ''}`}
-                  onClick={() => handleOptionSelect(opt.value)}
-                >
-                  {opt.label}
-                  <ArrowRight size={16} style={{ opacity: 0.4 }} />
-                </button>
-              ))}
-            </div>
-          </div>
-        )
 
       case 3:
         return (
