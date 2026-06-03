@@ -82,7 +82,7 @@ export default function UndercutQuiz({
   const handleSingleSelect = (field: keyof QuizData, value: string) => {
     setData(prev => ({ ...prev, [field]: value }))
     if (field === 'projectType') onProjectType?.(labelFor(PROJECT_OPTIONS, value))
-    setTimeout(goToNextStep, 300)
+    setTimeout(goToNextStep, 140)
   }
 
   const handleSubmit = async (final: QuizData) => {
@@ -239,6 +239,7 @@ export default function UndercutQuiz({
 
   return (
     <div
+      className="uc-quiz"
       style={{
         background: 'var(--rv-card)',
         borderRadius: 12,
@@ -246,6 +247,11 @@ export default function UndercutQuiz({
         boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
       }}
     >
+      {/* Snappier step transitions, scoped to this funnel only */}
+      <style>{`
+        .uc-quiz .rv-slide-up { animation-duration: 0.28s; }
+        .uc-quiz .rv-slide-down { animation-duration: 0.28s; }
+      `}</style>
       <div style={{ textAlign: 'center', marginBottom: 32, paddingTop: 8 }}>
         <p style={{ fontSize: 13, color: 'var(--rv-muted-fg)', letterSpacing: '0.05em', marginBottom: 12 }}>
           Free, no-obligation
