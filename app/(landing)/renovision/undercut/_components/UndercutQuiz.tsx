@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Check, Loader2 } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react'
 
 /* ------------------------------------------------------------------ *
  *  Renovision — "Beat Your Quote" Undercut funnel
@@ -27,6 +27,8 @@ const PROJECT_OPTIONS = [
   { value: 'bathroom', label: 'Bathroom Remodel' },
   { value: 'full-home', label: 'Full Home Renovation' },
   { value: 'addition-adu', label: 'Addition / ADU' },
+  { value: 'outdoor', label: 'Outdoor project (deck, pergola, etc.)' },
+  { value: 'other', label: 'Another home improvement project' },
 ]
 
 const QUOTE_STATUS_OPTIONS = [
@@ -77,6 +79,12 @@ export default function UndercutQuiz({
   const goToNextStep = () => {
     setDirection('up')
     setStep(prev => Math.min(prev + 1, totalSteps + 1))
+  }
+
+  const goToPrevStep = () => {
+    setSubmitError(null)
+    setDirection('down')
+    setStep(prev => Math.max(prev - 1, 1))
   }
 
   const handleSingleSelect = (field: keyof QuizData, value: string) => {
@@ -266,6 +274,28 @@ export default function UndercutQuiz({
         </p>
         <div style={{ width: 48, height: 2, background: 'rgba(230,144,32,0.4)', margin: '20px auto 0' }} />
       </div>
+
+      {step > 1 && !isSubmitting && (
+        <button
+          type="button"
+          onClick={goToPrevStep}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            marginBottom: 14,
+            cursor: 'pointer',
+            color: 'rgba(255,255,255,0.65)',
+            fontSize: 13,
+            fontWeight: 500,
+          }}
+        >
+          <ArrowLeft size={15} /> Back
+        </button>
+      )}
 
       {renderProgressBar()}
       {renderStep()}
