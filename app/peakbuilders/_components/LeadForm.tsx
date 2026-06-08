@@ -2,15 +2,21 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Loader2, Home, DollarSign, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Loader2, Home, DollarSign, ShieldCheck } from 'lucide-react'
 
 interface FormData {
+  homeowner: string
   zipCode: string
   helpType: string
   name: string
   email: string
   phone: string
 }
+
+const HOMEOWNER_OPTIONS = [
+  { value: 'yes', label: 'Yes' },
+  { value: 'no', label: 'No' },
+]
 
 const HELP_OPTIONS = [
   { value: 'full-replacement', label: 'Full Roof Replacement' },
@@ -29,6 +35,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
   const [step, setStep] = useState(1)
   const continueText = variant === 'financing' ? 'Check if You Qualify' : 'Continue'
   const [formData, setFormData] = useState<FormData>({
+    homeowner: '',
     zipCode: '',
     helpType: '',
     name: '',
@@ -36,10 +43,11 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
     phone: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({})
+  const [disqualified, setDisqualified] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const submitGuardRef = useRef(false)
-  const totalSteps = 5
+  const totalSteps = 6
 
   const validateZipCode = (zip: string) => /^\d{5}$/.test(zip)
   const validatePhone = (phone: string) => phone.replace(/\D/g, '').length >= 10
@@ -47,9 +55,23 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
 
   const goToNextStep = () => setStep(prev => Math.min(prev + 1, totalSteps + 1))
 
-  const handleOptionSelect = (value: string) => {
-    setFormData(prev => ({ ...prev, helpType: value }))
+  const handleOptionSelect = (field: 'homeowner' | 'helpType', value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
     setTimeout(goToNextStep, 250)
+  }
+
+  const handleHomeownerSelect = (value: string) => {
+    setFormData(prev => ({ ...prev, homeowner: value }))
+    if (value === 'no') {
+      setTimeout(() => setDisqualified(true), 250)
+    } else {
+      setTimeout(goToNextStep, 250)
+    }
+  }
+
+  const handleDisqualifiedBack = () => {
+    setDisqualified(false)
+    setFormData(prev => ({ ...prev, homeowner: '' }))
   }
 
   const handleInputSubmit = (field: keyof FormData, value: string) => {
@@ -104,6 +126,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
       phone: data.phone,
       zip_code: data.zipCode,
       help_type: data.helpType,
+      homeowner: data.homeowner,
       landing_variant: variant,
       page_url: typeof window !== 'undefined' ? window.location.href : null,
       utm_source: params.get('utm_source'),
@@ -191,6 +214,47 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
   }
 
   const renderStep = () => {
+    if (disqualified) {
+      return (
+        <div key="disqualified" className="pb-slide-up" style={{ textAlign: 'center', padding: '8px 0' }}>
+          <div style={{
+            width: 52,
+            height: 52,
+            borderRadius: 9999,
+            background: 'rgba(10,31,61,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 18px',
+            color: 'var(--pb-primary)',
+          }}>
+            <Home size={24} />
+          </div>
+          <h2 className="pb-serif" style={{
+            fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
+            fontWeight: 700,
+            marginBottom: 12,
+            lineHeight: 1.25,
+            color: 'var(--pb-card-fg)',
+          }}>
+            We&apos;re sorry
+          </h2>
+          <p style={{ fontSize: 15, color: 'var(--pb-muted-fg)', marginBottom: 24, lineHeight: 1.55 }}>
+            Peak Builders currently serves San Diego–area homeowners only. If you own a home in the
+            San Diego area, head back and let us know — we&apos;d love to help.
+          </p>
+          <button
+            type="button"
+            className="pb-btn-cta"
+            onClick={handleDisqualifiedBack}
+          >
+            <ArrowLeft size={16} />
+            Go Back
+          </button>
+        </div>
+      )
+    }
+
     switch (step) {
       case 1: {
         const isFinancing = variant === 'financing'
@@ -234,14 +298,14 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
               marginBottom: 14,
               lineHeight: 1.35,
             }}>
-              What do you need help with?
+              Are you a homeowner in the San Diego area?
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {HELP_OPTIONS.map(opt => (
+              {HOMEOWNER_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
-                  className={`pb-btn-form ${formData.helpType === opt.value ? 'pb-btn-selected' : ''}`}
-                  onClick={() => handleOptionSelect(opt.value)}
+                  className={`pb-btn-form ${formData.homeowner === opt.value ? 'pb-btn-selected' : ''}`}
+                  onClick={() => handleHomeownerSelect(opt.value)}
                 >
                   {opt.label}
                   <ArrowRight size={16} style={{ opacity: 0.4 }} />
@@ -256,6 +320,33 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
       case 2:
         return (
           <div key="step2" className="pb-slide-up">
+            <p style={{
+              fontSize: 'clamp(1.05rem, 2.6vw, 1.2rem)',
+              fontWeight: 700,
+              color: 'var(--pb-card-fg)',
+              marginBottom: 14,
+              lineHeight: 1.35,
+            }}>
+              What do you need help with?
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {HELP_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`pb-btn-form ${formData.helpType === opt.value ? 'pb-btn-selected' : ''}`}
+                  onClick={() => handleOptionSelect('helpType', opt.value)}
+                >
+                  {opt.label}
+                  <ArrowRight size={16} style={{ opacity: 0.4 }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 3:
+        return (
+          <div key="step3" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
@@ -278,9 +369,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
           </div>
         )
 
-      case 3:
+      case 4:
         return (
-          <div key="step3" className="pb-slide-up">
+          <div key="step4" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
@@ -301,9 +392,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
           </div>
         )
 
-      case 4:
+      case 5:
         return (
-          <div key="step4" className="pb-slide-up">
+          <div key="step5" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
@@ -331,9 +422,9 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
           </div>
         )
 
-      case 5:
+      case 6:
         return (
-          <div key="step5" className="pb-slide-up">
+          <div key="step6" className="pb-slide-up">
             <h2 className="pb-serif" style={{
               fontSize: 'clamp(1.4rem, 3.5vw, 1.7rem)',
               fontWeight: 700,
@@ -386,7 +477,7 @@ export default function LeadForm({ variant = 'standard' }: LeadFormProps = {}) {
       border: '1px solid var(--pb-divider)',
       boxShadow: '0 14px 50px rgba(10,31,61,0.10), 0 2px 8px rgba(10,31,61,0.04)',
     }}>
-      {renderProgressBar()}
+      {!disqualified && renderProgressBar()}
       {renderStep()}
     </div>
   )

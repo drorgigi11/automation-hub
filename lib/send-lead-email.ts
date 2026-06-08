@@ -1,6 +1,26 @@
 import { Resend } from 'resend'
 import { Lead } from './supabase'
 
+const esc = (v: unknown): string =>
+  String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+
+const ROOF_TYPE_LABELS: Record<string, string> = {
+  asphalt: 'Asphalt Shingles', tiles: 'Tiles', flat: 'Flat Roof', 'not-sure': 'Not Sure',
+}
+const PITCH_LABELS: Record<string, string> = {
+  flat: 'Flat', low: 'Low', moderate: 'Moderate', steep: 'Steep', 'not-sure': "I'm not sure",
+}
+const FINANCING_LABELS: Record<string, string> = {
+  yes: 'Yes', no: 'No', maybe: 'Maybe',
+}
+const SOURCE_LABELS: Record<string, string> = {
+  solar: 'Satellite measurement', manual: 'Manual size estimate',
+}
+
 export async function sendLeadEmail(lead: Lead) {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -47,6 +67,30 @@ export async function sendLeadEmail(lead: Lead) {
 
   const extraFields = ''
 
+  // Instant-quote ("Roof Estimate") leads carry a lot more than name/email/phone.
+  // Surface everything in the email: a readable curated section + a full raw dump.
+  const hasRoofData = Boolean(raw.address || raw.estimate_low || raw.roof_sqft)
+
+  const labelOf = (map: Record<string, string>, v: unknown) =>
+    map[String(v ?? '')] ?? esc(v)
+
+  const estimateRange =
+    raw.estimate_low != null && raw.estimate_high != null
+      ? `$${Number(raw.estimate_low).toLocaleString()} – $${Number(raw.estimate_high).toLocaleString()}`
+      : ''
+
+  const roofRows = [
+    raw.address       && `<tr><td><b>Address</b></td><td>${esc(raw.address)}</td></tr>`,
+    estimateRange     && `<tr><td><b>Estimated Cost</b></td><td>${estimateRange}</td></tr>`,
+    raw.roof_sqft     && `<tr><td><b>Roof Area</b></td><td>${Number(raw.roof_sqft).toLocaleString()} sqft</td></tr>`,
+    raw.roof_squares  && `<tr><td><b>Roofing Squares</b></td><td>${esc(raw.roof_squares)}</td></tr>`,
+    raw.roof_type     && `<tr><td><b>Roof Type</b></td><td>${labelOf(ROOF_TYPE_LABELS, raw.roof_type)}</td></tr>`,
+    raw.roof_pitch    && `<tr><td><b>Roof Pitch</b></td><td>${labelOf(PITCH_LABELS, raw.roof_pitch)}</td></tr>`,
+    raw.material      && `<tr><td><b>Material</b></td><td>${esc(raw.material)}</td></tr>`,
+    raw.financing     && `<tr><td><b>Financing</b></td><td>${labelOf(FINANCING_LABELS, raw.financing)}</td></tr>`,
+    raw.roof_source   && `<tr><td><b>Measurement</b></td><td>${labelOf(SOURCE_LABELS, raw.roof_source)}</td></tr>`,
+  ].filter(Boolean).join('\n')
+
   const RECIPIENTS_BY_CLIENT: Record<string, string[]> = {
     renovision:   ['drorgigi11@gmail.com', 'renovisiondesign.build@gmail.com'],
     peakbuilders: ['drorgigi11@gmail.com', 'Raphael@venado.life'],
@@ -59,7 +103,18 @@ export async function sendLeadEmail(lead: Lead) {
   const recipients = RECIPIENTS_BY_CLIENT[clientKey] ?? RECIPIENTS_BY_CLIENT.renovision
   const clientLabel = CLIENT_LABEL[clientKey] ?? 'Lead'
 
-  await resend.emails.send({
+  // Full raw-data backup for Peak Builders leads, so no field is ever silently
+  // dropped (including any added in the future).
+  const allDetailsRows = clientKey === 'peakbuilders'
+    ? Object.entries(raw)
+        .map(([k, v]) => {
+          const display = v != null && typeof v === 'object' ? JSON.stringify(v) : v
+          return `<tr><td style="padding:2px 8px 2px 0"><b>${esc(k)}</b></td><td style="padding:2px 0">${esc(display)}</td></tr>`
+        })
+        .join('\n')
+    : ''
+
+  const { data, error } = await resend.emails.send({
     from: 'GG Marketing <info@ggmarketing-s.com>',
     to: recipients,
     subject: `New ${clientLabel} Lead from ${displaySource}`,
@@ -73,10 +128,20 @@ export async function sendLeadEmail(lead: Lead) {
             ${extraFields}
           </tbody>
         </table>
+        ${hasRoofData && roofRows.length > 0 ? `
+        <h3 style="color:#2563eb;margin-top:20px">Roof Estimate</h3>
+        <table style="border-collapse:collapse;width:100%">
+          <tbody>${roofRows}</tbody>
+        </table>` : ''}
         ${utmRows.length > 0 ? `
         <h3 style="color:#2563eb;margin-top:20px">Campaign Info</h3>
         <table style="border-collapse:collapse;width:100%">
           <tbody>${utmRows}</tbody>
+        </table>` : ''}
+        ${allDetailsRows.length > 0 ? `
+        <h3 style="color:#888;margin-top:24px;font-size:14px">All details</h3>
+        <table style="border-collapse:collapse;width:100%;color:#888;font-size:12px">
+          <tbody>${allDetailsRows}</tbody>
         </table>` : ''}
         <p style="color:#888;font-size:12px;margin-top:24px">
           ${new Date(lead.created_at).toLocaleString('he-IL')}
@@ -84,4 +149,11 @@ export async function sendLeadEmail(lead: Lead) {
       </div>
     `,
   })
+
+  // Resend does NOT throw on send failure — it returns the error in the result.
+  // Surface it so the webhook's try/catch logs it instead of failing silently.
+  if (error) {
+    throw new Error(`Resend send failed: ${error.name} — ${error.message}`)
+  }
+  return data
 }

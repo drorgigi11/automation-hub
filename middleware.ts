@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/api/auth/login',
   '/api/auth/logout',
   '/api/webhooks',
+  '/api/peakbuilders',
   '/api/capi-event',
   '/api/debug-sheets',
   '/api/admin',

@@ -14,6 +14,24 @@ interface IncomingLead {
   zip?: string
   project_type?: string
   timeline?: string
+  // Qualifying quiz answer: 'yes' | 'no' homeowner in the San Diego area
+  homeowner?: string
+  // Instant-quote quiz answers
+  financing?: string
+  roof_pitch?: string
+  roof_type?: string
+  // Instant-quote roof report (satellite measurement + computed estimate)
+  address?: string
+  lat?: number | null
+  lng?: number | null
+  roof_area_m2?: number | null
+  roof_sqft?: number | null
+  roof_squares?: number | null
+  roof_source?: string
+  roof_complexity?: string
+  material?: string
+  estimate_low?: number | null
+  estimate_high?: number | null
   // Shared
   email?: string
   phone?: string
@@ -117,6 +135,39 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Compose the full roof report into one human-readable blob for GHL
+  // ({{contact.proj_details}}). Keeps every instant-quote detail in a single
+  // field for now, so nothing from the satellite estimate is lost downstream.
+  const num = (n: unknown): string | null => {
+    const v = typeof n === 'number' ? n : parseFloat(String(n ?? ''))
+    return Number.isFinite(v) ? v.toLocaleString('en-US') : null
+  }
+  const money = (n: unknown): string | null => {
+    const f = num(n)
+    return f ? `$${f}` : null
+  }
+  const roofSqft = num(body.roof_sqft)
+  const roofSquares = num(body.roof_squares)
+  const estLow = money(body.estimate_low)
+  const estHigh = money(body.estimate_high)
+  const projDetails =
+    [
+      body.address && `Address: ${body.address}`,
+      roofSqft && `Roof size: ${roofSqft} sq ft${roofSquares ? ` (~${roofSquares} squares)` : ''}`,
+      (estLow || estHigh) && `Instant estimate: ${estLow ?? '?'}–${estHigh ?? '?'}`,
+      body.roof_pitch && `Roof pitch: ${body.roof_pitch}`,
+      (body.roof_type ?? projectType) && `Roof type: ${body.roof_type ?? projectType}`,
+      body.financing && `Financing: ${body.financing}`,
+      body.homeowner && `Homeowner: ${body.homeowner}`,
+      timeline && `Timeline: ${timeline}`,
+      body.roof_complexity && `Roof complexity: ${body.roof_complexity}`,
+      body.material && `Material: ${body.material}`,
+      body.roof_source && `Measured by: ${body.roof_source}`,
+      (body.lat != null && body.lng != null) && `Coordinates: ${body.lat}, ${body.lng}`,
+    ]
+      .filter(Boolean)
+      .join('\n') || null
+
   // Forward to GoHighLevel inbound webhook.
   const ghlUrl = process.env.GHL_PEAKBUILDERS_WEBHOOK_URL
   if (ghlUrl) {
@@ -133,6 +184,12 @@ export async function POST(req: NextRequest) {
           zip,
           project_type: projectType,
           timeline,
+          homeowner: (body.homeowner ?? '').toString().trim() || null,
+          financing: (body.financing ?? '').toString().trim() || null,
+          roof_pitch: (body.roof_pitch ?? '').toString().trim() || null,
+          roof_type: (body.roof_type ?? '').toString().trim() || null,
+          // Full roof report dumped into one GHL field ({{contact.proj_details}}).
+          proj_details: projDetails,
           page_url: body.page_url ?? null,
           landing_page: body.landing_page ?? null,
           referrer: body.referrer ?? null,
@@ -153,7 +210,10 @@ export async function POST(req: NextRequest) {
           ttclid: body.ttclid ?? null,
           msclkid: body.msclkid ?? null,
           submitted_at: body.submitted_at ?? new Date().toISOString(),
-          source: body.source ?? 'peak-builders.net',
+          // GHL contact lead.source — tag everything from this funnel as dror_gigi.
+          source: 'dror_gigi',
+          // Preserve the original page/source that the lead came in on.
+          source_page: body.source ?? 'peak-builders.net',
           landing_variant: body.landing_variant ?? null,
         }),
       })

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../_components/Header'
-import { Phone, CheckCircle } from 'lucide-react'
+import { Phone, CheckCircle, Ruler, Home, MapPin } from 'lucide-react'
+import { formatUsd } from '@/lib/roof-pricing'
 
 declare global {
   interface Window {
@@ -13,7 +14,30 @@ declare global {
 const phoneNumber = '(619) 330-8185'
 const phoneLink = 'tel:+16193308185'
 
+interface QuoteResult {
+  address: string
+  areaSqft: number
+  squares: number
+  estimateLow: number
+  estimateHigh: number
+  source: 'solar' | 'manual'
+  pitchLabel: string
+  roofTypeLabel: string
+  financingLabel: string
+}
+
 export default function PeakBuildersThankYou() {
+  const [quote, setQuote] = useState<QuoteResult | null>(null)
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('pb_quote_result')
+      if (raw) setQuote(JSON.parse(raw) as QuoteResult)
+    } catch {
+      // ignore — fall back to the plain thank-you message
+    }
+  }, [])
+
   useEffect(() => {
     let tracked = false
     const timeouts: ReturnType<typeof setTimeout>[] = []
@@ -89,6 +113,72 @@ export default function PeakBuildersThankYou() {
               Please keep your phone nearby so we can confirm a convenient time and help you understand whether your roof needs a full replacement, a repair, or no work at all.
             </p>
 
+            {quote && (
+              <div
+                className="pb-fade-in"
+                style={{
+                  borderTop: '1px solid var(--pb-divider)',
+                  paddingTop: 24,
+                  marginBottom: 28,
+                  textAlign: 'left',
+                }}
+              >
+                <div style={{
+                  fontSize: 12, fontWeight: 600, color: 'var(--pb-muted-fg)',
+                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                  textAlign: 'center', marginBottom: 6,
+                }}>
+                  Your Estimated Project Cost
+                </div>
+                <div style={{
+                  fontSize: 'clamp(1.7rem, 6vw, 2.3rem)', fontWeight: 800,
+                  color: 'var(--pb-primary)', lineHeight: 1.1,
+                  textAlign: 'center', marginBottom: 12,
+                }}>
+                  {formatUsd(quote.estimateLow)} – {formatUsd(quote.estimateHigh)}
+                </div>
+
+                <div style={{
+                  textAlign: 'center', marginBottom: 18, paddingTop: 12,
+                  borderTop: '1px dashed var(--pb-divider)',
+                }}>
+                  <div style={{ fontSize: 'clamp(1.15rem, 4vw, 1.4rem)', fontWeight: 700, color: 'var(--pb-card-fg)', lineHeight: 1.15 }}>
+                    {formatUsd(Math.round(quote.estimateLow / 24))} – {formatUsd(Math.round(quote.estimateHigh / 24))}<span style={{ fontSize: '0.7em', fontWeight: 600 }}>/mo</span>
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--pb-muted-fg)', marginTop: 3 }}>
+                    with 24 monthly payments &middot; 0% interest
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                  {quote.areaSqft > 0 && (
+                    <Stat icon={<Ruler size={16} />} label="Roof Area" value={`${quote.areaSqft.toLocaleString()} sqft`} />
+                  )}
+                  {quote.squares > 0 && (
+                    <Stat icon={<Home size={16} />} label="Roofing Squares" value={`${quote.squares}`} />
+                  )}
+                </div>
+
+                <div style={{
+                  borderRadius: 10, background: 'var(--pb-bg-soft)',
+                  border: '1px solid var(--pb-divider)', padding: '14px 16px',
+                  display: 'flex', flexDirection: 'column', gap: 8,
+                }}>
+                  {quote.address && <DetailRow icon={<MapPin size={14} />} label="Address" value={quote.address} />}
+                  {quote.roofTypeLabel && <DetailRow label="Roof Type" value={quote.roofTypeLabel} />}
+                  {quote.pitchLabel && <DetailRow label="Roof Pitch" value={quote.pitchLabel} />}
+                  {quote.financingLabel && <DetailRow label="Interested in Financing" value={quote.financingLabel} />}
+                </div>
+
+                <p style={{ fontSize: 11, color: 'var(--pb-muted-fg)', textAlign: 'center', lineHeight: 1.5, marginTop: 12 }}>
+                  {quote.source === 'manual'
+                    ? 'Preliminary estimate based on your selected home size. '
+                    : 'Preliminary estimate based on satellite roof measurement. '}
+                  Final pricing confirmed after a free on-site inspection.
+                </p>
+              </div>
+            )}
+
             <div style={{ borderTop: '1px solid var(--pb-divider)', paddingTop: 24 }}>
               <p style={{ color: 'var(--pb-muted-fg)', marginBottom: 6, fontSize: 13 }}>
                 Prefer not to wait?
@@ -121,6 +211,30 @@ export default function PeakBuildersThankYou() {
           © {new Date().getFullYear()} Peak Builders &amp; Roofers of San Diego. Licensed &amp; Insured.
         </p>
       </footer>
+    </div>
+  )
+}
+
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div style={{ flex: 1, borderRadius: 10, background: 'var(--pb-bg-soft)', border: '1px solid var(--pb-divider)', padding: '12px 14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--pb-muted-fg)', marginBottom: 4 }}>
+        {icon}
+        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--pb-card-fg)' }}>{value}</div>
+    </div>
+  )
+}
+
+function DetailRow({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--pb-muted-fg)', flexShrink: 0 }}>
+        {icon}
+        {label}
+      </span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pb-card-fg)', textAlign: 'right' }}>{value}</span>
     </div>
   )
 }

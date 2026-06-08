@@ -141,6 +141,24 @@ export default function PeakBuildersLayout({ children }: { children: React.React
           }
           .pb-badge-title { font-size: 13px; font-weight: 600; color: var(--pb-card-fg); margin-bottom: 2px; line-height: 1.3; }
           .pb-badge-sub { font-size: 12px; color: var(--pb-muted-fg); line-height: 1.4; }
+          /* Google Places Autocomplete dropdown — keep above everything */
+          .pac-container {
+            z-index: 100000 !important;
+            border-radius: 10px;
+            margin-top: 4px;
+            box-shadow: 0 8px 28px rgba(10,31,61,0.18);
+            border: 1px solid var(--pb-divider);
+            font-family: 'Inter', system-ui, sans-serif;
+          }
+          .pac-item { padding: 8px 12px; font-size: 14px; cursor: pointer; }
+          .pac-item:hover { background: #f6fbf7; }
+          /* New PlaceAutocompleteElement — full width, force light to match form */
+          .pb-place-ac { width: 100%; }
+          .pb-place-ac gmp-place-autocomplete {
+            width: 100%;
+            display: block;
+            color-scheme: light;
+          }
         `}</style>
         {children}
       </div>
