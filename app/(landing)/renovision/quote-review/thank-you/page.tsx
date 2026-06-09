@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
-import Script from 'next/script'
 import Header from '../../_components/Header'
-import { CheckCircle, Search, PhoneCall, Lock } from 'lucide-react'
+import { CheckCircle, Search, PhoneCall, Lock, Phone } from 'lucide-react'
 
 declare global {
   interface Window {
@@ -11,8 +10,8 @@ declare global {
   }
 }
 
-// TODO: replace with the real Renovision Calendly scheduling link.
-const CALENDLY_URL = 'https://calendly.com/renovision/15min'
+const phoneNumber = '(425) 532-4714'
+const phoneLink = 'tel:+14255324714'
 
 const STEPS = [
   {
@@ -144,31 +143,29 @@ export default function UndercutThankYou() {
             </div>
           </div>
 
-          {/* Skip the line / Calendly */}
+          {/* Skip the line / call us now */}
           <div className="rv-fade-in" style={{ textAlign: 'center', margin: '36px 0 16px' }}>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'hsl(165, 45%, 18%)', marginBottom: 8 }}>
               Don&apos;t want to wait? Skip the line.
             </h2>
-            <p style={{ fontSize: '1rem', lineHeight: 1.55, color: 'hsl(165, 12%, 35%)', maxWidth: 520, margin: '0 auto' }}>
-              Book your free 15-minute discovery call directly on our calendar below and let&apos;s
-              talk about your vision today.
+            <p style={{ fontSize: '1rem', lineHeight: 1.55, color: 'hsl(165, 12%, 35%)', maxWidth: 520, margin: '0 auto 20px' }}>
+              Call us now to talk about your project today and get priority assistance.
             </p>
+            <a
+              href={phoneLink}
+              className="rv-btn-cta"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                textDecoration: 'none',
+                fontSize: '1.15rem',
+              }}
+            >
+              <Phone size={20} />
+              {phoneNumber}
+            </a>
           </div>
-
-          {/* Calendly inline widget */}
-          <div
-            className="calendly-inline-widget"
-            data-url={CALENDLY_URL}
-            style={{
-              minWidth: 320,
-              height: 680,
-              borderRadius: 12,
-              overflow: 'hidden',
-              boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
-              background: '#fff',
-            }}
-          />
-          <Script src="https://assets.calendly.com/assets/external/widget.js" strategy="afterInteractive" />
         </div>
       </main>
       <footer style={{ padding: '16px 24px', textAlign: 'center' }}>
