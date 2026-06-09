@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Check, Loader2, Lock } from 'lucide-react'
 
 /* ------------------------------------------------------------------ *
  *  Renovision — "Beat Your Quote" Undercut funnel
@@ -299,6 +299,9 @@ export default function UndercutQuiz({
         <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
           See if we can beat your current quote
         </p>
+        <p style={{ fontSize: 13, color: 'var(--rv-muted-fg)', marginTop: 12, lineHeight: 1.5 }}>
+          Just answer a few quick questions below — it takes under a minute, with no obligation.
+        </p>
         <div style={{ width: 48, height: 2, background: 'rgba(230,144,32,0.4)', margin: '20px auto 0' }} />
       </div>
 
@@ -518,7 +521,13 @@ function ContactStep({ animClass, data, hasQuote, errors, isSubmitting, onSubmit
             value={values.phone}
             onChange={e => field('phone', e.target.value)}
           />
-          {errors.phone && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 4 }}>{errors.phone}</p>}
+          {errors.phone ? (
+            <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 4 }}>{errors.phone}</p>
+          ) : (
+            <p style={{ color: 'var(--rv-muted-fg)', fontSize: 12, marginTop: 4 }}>
+              So a project manager can call you with your price range. We never share or sell your number.
+            </p>
+          )}
         </div>
         <div>
           <input
@@ -532,7 +541,23 @@ function ContactStep({ animClass, data, hasQuote, errors, isSubmitting, onSubmit
           />
           {errors.zipCode && <p style={{ color: 'var(--rv-destructive)', fontSize: 13, marginTop: 4 }}>{errors.zipCode}</p>}
         </div>
-        <button type="submit" className="rv-btn-cta" style={{ marginTop: 4 }} disabled={isSubmitting}>
+        <p
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            fontSize: 12,
+            color: 'var(--rv-muted-fg)',
+            marginTop: 8,
+            textAlign: 'center',
+            lineHeight: 1.5,
+          }}
+        >
+          <Lock size={13} style={{ flex: '0 0 auto' }} />
+          Your details are only used to prepare your free review — never shared or sold.
+        </p>
+        <button type="submit" className="rv-btn-cta" style={{ marginTop: 8 }} disabled={isSubmitting}>
           {isSubmitting && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
           {isSubmitting ? 'Submitting...' : hasQuote ? 'Get My Free Proposal Review' : 'Get My Free Estimate'}
           {!isSubmitting && <ArrowRight size={16} />}
