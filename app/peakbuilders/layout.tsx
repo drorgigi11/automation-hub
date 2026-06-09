@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import PixelPageView from './_components/PixelPageView'
 
 export const metadata: Metadata = {
   title: 'Peak Builders & Roofers — Free Roof Estimate & Consultation',
@@ -20,8 +21,9 @@ export default function PeakBuildersLayout({ children }: { children: React.React
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '1168941604681692');
-        fbq('track', 'PageView');
       `}</Script>
+      {/* PageView (browser + server CAPI, deduplicated via shared eventID) */}
+      <PixelPageView />
       {/* Microsoft Clarity */}
       <Script id="ms-clarity-peakbuilders" strategy="afterInteractive">{`
         (function(c,l,a,r,i,t,y){
