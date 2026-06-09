@@ -70,7 +70,14 @@ export default function UndercutQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const submitGuardRef = useRef(false)
+  // Tracks the latest quote-status synchronously so the navigation helpers can
+  // decide whether to skip the budget step before React state has flushed.
+  const quoteStatusRef = useRef(data.quoteStatus)
   const totalSteps = 5
+
+  // Leads without a quote yet have no budget that was quoted to them, so we skip
+  // step 3 (the "budget range you were quoted" question) for them.
+  const skipsBudget = (status: string) => status === 'no-quote'
 
   const validateZipCode = (zip: string) => /^\d{5}$/.test(zip)
   const validatePhone = (phone: string) => /^[\d\s\-()]{10,}$/.test(phone.replace(/\D/g, ''))
@@ -78,18 +85,32 @@ export default function UndercutQuiz({
 
   const goToNextStep = () => {
     setDirection('up')
-    setStep(prev => Math.min(prev + 1, totalSteps + 1))
+    setStep(prev => {
+      let next = prev + 1
+      if (next === 3 && skipsBudget(quoteStatusRef.current)) next = 4
+      return Math.min(next, totalSteps + 1)
+    })
   }
 
   const goToPrevStep = () => {
     setSubmitError(null)
     setDirection('down')
-    setStep(prev => Math.max(prev - 1, 1))
+    setStep(prev => {
+      let prevStep = prev - 1
+      if (prevStep === 3 && skipsBudget(quoteStatusRef.current)) prevStep = 2
+      return Math.max(prevStep, 1)
+    })
   }
 
   const handleSingleSelect = (field: keyof QuizData, value: string) => {
-    setData(prev => ({ ...prev, [field]: value }))
+    setData(prev => {
+      const next = { ...prev, [field]: value }
+      // Clear any stale budget if the lead switches to "no quote yet".
+      if (field === 'quoteStatus' && skipsBudget(value)) next.budgetQuoted = ''
+      return next
+    })
     if (field === 'projectType') onProjectType?.(labelFor(PROJECT_OPTIONS, value))
+    if (field === 'quoteStatus') quoteStatusRef.current = value
     setTimeout(goToNextStep, 140)
   }
 
@@ -107,7 +128,7 @@ export default function UndercutQuiz({
       const message = [
         `Project: ${projectLabel}`,
         `Quote status: ${quoteLabel}`,
-        `Budget quoted: ${budgetLabel}`,
+        final.budgetQuoted ? `Budget quoted: ${budgetLabel}` : null,
         final.details.trim() ? `Details: ${final.details.trim()}` : null,
       ]
         .filter(Boolean)
@@ -122,7 +143,7 @@ export default function UndercutQuiz({
         zip_code: final.zipCode,
         project_type: projectLabel,
         quote_status: quoteLabel,
-        budget_quoted: budgetLabel,
+        budget_quoted: final.budgetQuoted ? budgetLabel : null,
         details: final.details.trim() || null,
         message,
         submitted_at: new Date().toISOString(),
@@ -146,22 +167,28 @@ export default function UndercutQuiz({
 
   const animClass = direction === 'up' ? 'rv-slide-up' : 'rv-slide-down'
 
-  const renderProgressBar = () => (
-    <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
-      {Array.from({ length: totalSteps }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            height: 4,
-            flex: 1,
-            borderRadius: 9999,
-            background: i < step ? 'var(--rv-primary)' : 'rgba(255,255,255,0.2)',
-            transition: 'background 0.5s',
-          }}
-        />
-      ))}
-    </div>
-  )
+  // The visible steps depend on whether the budget step is skipped.
+  const activeSteps = skipsBudget(data.quoteStatus) ? [1, 2, 4, 5] : [1, 2, 3, 4, 5]
+
+  const renderProgressBar = () => {
+    const currentIndex = activeSteps.indexOf(step)
+    return (
+      <div style={{ display: 'flex', gap: 6, marginBottom: 32 }}>
+        {activeSteps.map((s, i) => (
+          <div
+            key={s}
+            style={{
+              height: 4,
+              flex: 1,
+              borderRadius: 9999,
+              background: i <= currentIndex ? 'var(--rv-primary)' : 'rgba(255,255,255,0.2)',
+              transition: 'background 0.5s',
+            }}
+          />
+        ))}
+      </div>
+    )
+  }
 
   const renderStep = () => {
     switch (step) {
@@ -204,6 +231,7 @@ export default function UndercutQuiz({
             key="step4"
             animClass={animClass}
             defaultValue={data.details}
+            hasQuote={!skipsBudget(data.quoteStatus)}
             onContinue={v => {
               setData(prev => ({ ...prev, details: v }))
               goToNextStep()
@@ -220,6 +248,7 @@ export default function UndercutQuiz({
             key="step5"
             animClass={animClass}
             data={data}
+            hasQuote={!skipsBudget(data.quoteStatus)}
             errors={errors}
             isSubmitting={isSubmitting}
             onSubmit={values => {
@@ -307,7 +336,9 @@ export default function UndercutQuiz({
       )}
 
       <p style={{ textAlign: 'center', color: 'var(--rv-muted-fg)', fontSize: 12, marginTop: 24 }}>
-        Your answers help us prepare an accurate, side-by-side review of your quote
+        {skipsBudget(data.quoteStatus)
+          ? 'Your answers help us prepare an accurate price range and plan for your project'
+          : 'Your answers help us prepare an accurate, side-by-side review of your quote'}
       </p>
     </div>
   )
@@ -350,11 +381,12 @@ function SelectStep({ animClass, heading, options, selected, onSelect }: SelectS
 interface DetailsStepProps {
   animClass: string
   defaultValue: string
+  hasQuote: boolean
   onContinue: (value: string) => void
   onSkip: () => void
 }
 
-function DetailsStep({ animClass, defaultValue, onContinue, onSkip }: DetailsStepProps) {
+function DetailsStep({ animClass, defaultValue, hasQuote, onContinue, onSkip }: DetailsStepProps) {
   const [value, setValue] = useState(defaultValue)
 
   useEffect(() => {
@@ -364,12 +396,18 @@ function DetailsStep({ animClass, defaultValue, onContinue, onSkip }: DetailsSte
   return (
     <div className={animClass}>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16, color: 'var(--rv-card-fg)', lineHeight: 1.3 }}>
-        Tell us a little more about the quote you received and your project.
+        {hasQuote
+          ? 'Tell us a little more about the quote you received and your project.'
+          : 'Tell us a little more about the project you have in mind.'}
       </h2>
       <textarea
         className="rv-input"
         style={{ minHeight: 120, resize: 'vertical', fontFamily: 'inherit' }}
-        placeholder="Example: What work is included, what price you were quoted, what feels unclear, or what you'd like us to improve."
+        placeholder={
+          hasQuote
+            ? "Example: What work is included, what price you were quoted, what feels unclear, or what you'd like us to improve."
+            : 'Example: What you want to build, the rough size or scope, your ideal timeline, and any budget you have in mind.'
+        }
         value={value}
         onChange={e => setValue(e.target.value)}
         autoFocus
@@ -419,12 +457,13 @@ interface ContactValues {
 interface ContactStepProps {
   animClass: string
   data: QuizData
+  hasQuote: boolean
   errors: Partial<Record<keyof QuizData, string>>
   isSubmitting: boolean
   onSubmit: (values: ContactValues) => void
 }
 
-function ContactStep({ animClass, data, errors, isSubmitting, onSubmit }: ContactStepProps) {
+function ContactStep({ animClass, data, hasQuote, errors, isSubmitting, onSubmit }: ContactStepProps) {
   const [values, setValues] = useState<ContactValues>({
     name: data.name,
     email: data.email,
@@ -446,7 +485,8 @@ function ContactStep({ animClass, data, errors, isSubmitting, onSubmit }: Contac
   return (
     <div className={animClass}>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: 16, color: 'var(--rv-card-fg)', lineHeight: 1.3 }}>
-        Where should we send your second opinion? <span style={{ color: 'var(--rv-primary)' }}>*</span>
+        {hasQuote ? 'Where should we send your second opinion?' : 'Where should we send your free estimate?'}{' '}
+        <span style={{ color: 'var(--rv-primary)' }}>*</span>
       </h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div>
@@ -496,7 +536,7 @@ function ContactStep({ animClass, data, errors, isSubmitting, onSubmit }: Contac
         </div>
         <button type="submit" className="rv-btn-cta" style={{ marginTop: 4 }} disabled={isSubmitting}>
           {isSubmitting && <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />}
-          {isSubmitting ? 'Submitting...' : 'Get My Free Proposal Review'}
+          {isSubmitting ? 'Submitting...' : hasQuote ? 'Get My Free Proposal Review' : 'Get My Free Estimate'}
           {!isSubmitting && <ArrowRight size={16} />}
         </button>
       </form>
