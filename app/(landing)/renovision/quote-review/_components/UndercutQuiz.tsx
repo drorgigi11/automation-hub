@@ -8,7 +8,7 @@ import { ArrowRight, ArrowLeft, Check, Loader2 } from 'lucide-react'
  *  Renovision — "Beat Your Quote" Undercut funnel
  *  Reuses the shared renovision-theme (rv-* classes / --rv-* vars from
  *  app/(landing)/layout.tsx). Posts to /api/webhooks/lovable and routes
- *  to /renovision/undercut/thank-you.
+ *  to /renovision/quote-review/thank-you.
  * ------------------------------------------------------------------ */
 
 interface QuizData {
@@ -157,7 +157,7 @@ export default function UndercutQuiz({
 
       if (!res.ok) throw new Error('Failed to submit')
 
-      router.push('/renovision/undercut/thank-you')
+      router.push('/renovision/quote-review/thank-you')
     } catch {
       setSubmitError('Something went wrong. Please try again.')
       setIsSubmitting(false)
@@ -294,9 +294,7 @@ export default function UndercutQuiz({
           Free, no-obligation
         </p>
         <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: 'var(--rv-card-fg)', lineHeight: 1.2, marginBottom: 8 }}>
-          Second Opinion
-          <span style={{ color: 'var(--rv-primary)' }}> Proposal </span>
-          Review
+          <span style={{ color: 'var(--rv-primary)' }}>Second Opinion</span> on Your Remodel
         </h1>
         <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
           See if we can beat your current quote

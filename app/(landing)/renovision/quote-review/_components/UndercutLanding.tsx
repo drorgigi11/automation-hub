@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import Header from '../../_components/Header'
 import UndercutQuiz from './UndercutQuiz'
 
-export default function UndercutLanding() {
-  const [projectType, setProjectType] = useState<string | null>(null)
+const TRUST_TAGS = ['Licensed & Insured', 'Hundreds of 5-Star Reviews', 'Local & Family Owned']
 
+export default function UndercutLanding() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--rv-bg)' }}>
       <Header />
@@ -30,7 +29,7 @@ export default function UndercutLanding() {
               marginBottom: 14,
             }}
           >
-            Got a {projectType ?? 'Renovation'} Quote in The Seattle Area?
+            Got a remodeling quote in the Seattle area?
           </p>
           <h1
             style={{
@@ -41,8 +40,8 @@ export default function UndercutLanding() {
               marginBottom: 16,
             }}
           >
-            We Can Beat Your Quote with a{' '}
-            <span style={{ color: 'var(--rv-primary)' }}>Better, Safer Offer.</span>
+            Before You Sign, Get a{' '}
+            <span style={{ color: 'var(--rv-primary)' }}>Second Opinion</span> on Your Remodel
           </h1>
           <p
             style={{
@@ -53,13 +52,35 @@ export default function UndercutLanding() {
               margin: '0 auto',
             }}
           >
-            Leave your project details below. Our design-build team will review your quote and show
-            you whether we can offer a better price, clearer scope, and safer build process.
+            Share your project details below. Our design-build team will review your quote and see
+            if we can offer a better price, clearer scope, and safer build process.
           </p>
+
+          {/* Trust tags */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '6px 14px',
+              marginTop: 20,
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'hsl(165, 30%, 32%)',
+            }}
+          >
+            {TRUST_TAGS.map((tag, i) => (
+              <span key={tag} style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
+                {i > 0 && <span style={{ color: 'rgba(0,0,0,0.25)' }}>·</span>}
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div style={{ width: '100%', maxWidth: 440 }}>
-          <UndercutQuiz onProjectType={setProjectType} />
+          <UndercutQuiz />
         </div>
       </main>
       <footer style={{ padding: '16px 24px', textAlign: 'center' }}>
