@@ -76,6 +76,14 @@ export async function POST(req: NextRequest) {
     .filter(Boolean)
     .join(' ')
   const name = (body.name ?? '').toString().trim() || composedName || null
+  // GHL maps a contact's name from first_name/last_name (no standard full_name
+  // field). The instant-quote form only collects a single "Full Name", so split
+  // it here when explicit first/last weren't provided — otherwise the contact
+  // lands in GHL with no name.
+  const nameParts = (name ?? '').split(/\s+/).filter(Boolean)
+  const firstName = (body.first_name ?? '').toString().trim() || nameParts[0] || null
+  const lastName =
+    (body.last_name ?? '').toString().trim() || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : null)
   const email = (body.email ?? '').toString().trim().toLowerCase() || null
   const phone = (body.phone ?? '').toString().trim() || null
   const zip = (body.zip ?? body.zip_code ?? '').toString().trim() || null
@@ -177,8 +185,9 @@ export async function POST(req: NextRequest) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           full_name: name,
-          first_name: body.first_name ?? null,
-          last_name: body.last_name ?? null,
+          name,
+          first_name: firstName,
+          last_name: lastName,
           email,
           phone,
           zip,
