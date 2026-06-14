@@ -8,7 +8,7 @@ const PUBLIC_PATHS = [
   '/api/auth/logout',
   '/api/webhooks',
   '/api/peakbuilders',
-  '/api/peakbuilders-denver',
+  '/api/denver_basements',
   '/api/capi-event',
   '/api/debug-sheets',
   '/api/admin',
@@ -19,7 +19,7 @@ const PUBLIC_PATHS = [
   '/bathroomstyle',
   '/renovision',
   '/peakbuilders',
-  '/peakbuilders-denver',
+  '/denver_basements',
   '/thank-you',
   '/privacy',
 ]
@@ -43,6 +43,7 @@ export async function middleware(req: NextRequest) {
   // Custom-domain rewrite: serve the mapped section as if it were the root.
   const mountPath = CUSTOM_DOMAINS[hostname]
   if (mountPath && !pathname.startsWith(mountPath)
+      && !pathname.startsWith('/denver_basements')
       && !pathname.startsWith('/_next')
       && !pathname.startsWith('/api')
       && !pathname.includes('.')) {

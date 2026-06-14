@@ -86,13 +86,13 @@ export default function PeakBuildersDenverLanding() {
           <div className="pbd-ba-grid">
             <div className="pbd-ba-item">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="pbd-ba-img" src="/peakbuilders-denver/before.jpg" alt="Unfinished basement before" />
+              <img className="pbd-ba-img" src="/denver_basements/before.jpg" alt="Unfinished basement before" />
               <span className="pbd-ba-tag before">Before</span>
               <div className="pbd-ba-cap">Unfinished basement</div>
             </div>
             <div className="pbd-ba-item">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="pbd-ba-img" src="/peakbuilders-denver/after.jpg" alt="Finished basement living space after" />
+              <img className="pbd-ba-img" src="/denver_basements/after.jpg" alt="Finished basement living space after" />
               <span className="pbd-ba-tag after">After</span>
               <div className="pbd-ba-cap">Finished living space</div>
             </div>

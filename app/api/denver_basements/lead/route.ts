@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
           // All basement quiz answers dumped into one GHL field ({{contact.proj_details}}).
           proj_details: projDetails,
           page_url: body.page_url ?? null,
-          landing_page: body.landing_page ?? 'peakbuilders-denver',
+          landing_page: body.landing_page ?? 'denver_basements',
           utm_source: body.utm_source ?? null,
           utm_medium: body.utm_medium ?? null,
           utm_campaign: body.utm_campaign ?? null,
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
           // GHL contact lead.source — agency attribution.
           source: 'dror_gigi',
           // Mark the originating funnel so Denver is never confused with San Diego.
-          source_page: 'peak-builders.net/peakbuilders-denver',
+          source_page: 'peak-builders.net/denver_basements',
         }),
       })
       if (!ghlRes.ok) {

@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 function LogoMark() {
   // Crisp SVG recreation of the Peak Builders mark (gold disc + dark peaks).
-  // Used until /public/peakbuilders-denver/logo.png is supplied.
+  // Used until /public/denver_basements/logo.png is supplied.
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
       <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden style={{ flexShrink: 0 }}>
@@ -74,7 +74,7 @@ export default function Header() {
         {logoOk ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src="/peakbuilders-denver/logo.png"
+            src="/denver_basements/logo.png"
             alt="Peak Builders & Roofers of Denver"
             onError={() => setLogoOk(false)}
             style={{ height: 42, width: 'auto', maxWidth: '70vw', display: 'block' }}

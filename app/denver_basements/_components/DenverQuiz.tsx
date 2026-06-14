@@ -154,7 +154,7 @@ export default function DenverQuiz() {
       basement_goals: goalLabels,
       interested_multiple: goalLabels,
       project_type: goalLabels.join(', '),
-      landing_page: 'peakbuilders-denver',
+      landing_page: 'denver_basements',
       page_url: typeof window !== 'undefined' ? window.location.href : null,
       utm_source: params.get('utm_source'),
       utm_medium: params.get('utm_medium'),
@@ -167,7 +167,7 @@ export default function DenverQuiz() {
     }
 
     try {
-      const res = await fetch('/api/peakbuilders-denver/lead', {
+      const res = await fetch('/api/denver_basements/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -181,7 +181,7 @@ export default function DenverQuiz() {
       return
     }
 
-    router.push('/peakbuilders-denver/thank-you')
+    router.push('/denver_basements/thank-you')
   }
 
   const renderProgressBar = () => (

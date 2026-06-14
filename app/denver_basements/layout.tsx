@@ -66,7 +66,7 @@ export default function PeakBuildersDenverLayout({ children }: { children: React
           }
           .pbd-hero-bg {
             position: absolute; inset: 0;
-            background-image: url('/peakbuilders-denver/basement-hero.jpg');
+            background-image: url('/denver_basements/basement-hero.jpg');
             background-size: cover; background-position: center;
             transform: scale(1.04);
           }
