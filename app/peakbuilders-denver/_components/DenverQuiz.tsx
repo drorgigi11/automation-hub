@@ -268,7 +268,10 @@ export default function DenverQuiz() {
       case 1:
         return (
           <div key="step1" className="pb-slide-up">
-            {questionHeading('Are you the homeowner?')}
+            {questionHeading('Are you the homeowner?', 4)}
+            <p style={{ fontSize: 13, color: 'var(--pb-muted-fg)', marginBottom: 16 }}>
+              Click your answer to continue.
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {HOMEOWNER_OPTIONS.map(opt => (
                 <button
@@ -433,6 +436,20 @@ export default function DenverQuiz() {
 
   return (
     <div>
+      {!disqualified && (
+        <h2
+          className="pb-serif"
+          style={{
+            fontSize: 'clamp(1.25rem, 3.2vw, 1.5rem)',
+            fontWeight: 700,
+            lineHeight: 1.2,
+            color: 'var(--pb-card-fg)',
+            marginBottom: 12,
+          }}
+        >
+          Get Your Free Basement Design Consultation
+        </h2>
+      )}
       {!disqualified && (
         <div className="pbd-card-kicker">
           <ShieldCheck size={14} color="var(--pb-gold)" />
