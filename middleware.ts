@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   '/api/auth/logout',
   '/api/webhooks',
   '/api/peakbuilders',
+  '/api/peakbuilders-denver',
   '/api/capi-event',
   '/api/debug-sheets',
   '/api/admin',
@@ -18,6 +19,7 @@ const PUBLIC_PATHS = [
   '/bathroomstyle',
   '/renovision',
   '/peakbuilders',
+  '/peakbuilders-denver',
   '/thank-you',
   '/privacy',
 ]

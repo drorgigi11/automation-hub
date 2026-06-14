@@ -92,20 +92,22 @@ export async function sendLeadEmail(lead: Lead) {
   ].filter(Boolean).join('\n')
 
   const RECIPIENTS_BY_CLIENT: Record<string, string[]> = {
-    renovision:   ['drorgigi11@gmail.com', 'renovisiondesign.build@gmail.com'],
-    peakbuilders: ['drorgigi11@gmail.com', 'Raphael@venado.life'],
+    renovision:             ['drorgigi11@gmail.com', 'renovisiondesign.build@gmail.com'],
+    peakbuilders:           ['drorgigi11@gmail.com', 'Raphael@venado.life'],
+    'peakbuilders-denver':  ['drorgigi11@gmail.com', 'Raphael@venado.life'],
   }
   const CLIENT_LABEL: Record<string, string> = {
-    renovision:   'Renovision',
-    peakbuilders: 'Peak Builders',
+    renovision:             'Renovision',
+    peakbuilders:           'Peak Builders',
+    'peakbuilders-denver':  'Peak Builders Denver',
   }
   const clientKey = String(raw.client ?? 'renovision').toLowerCase()
   const recipients = RECIPIENTS_BY_CLIENT[clientKey] ?? RECIPIENTS_BY_CLIENT.renovision
   const clientLabel = CLIENT_LABEL[clientKey] ?? 'Lead'
 
-  // Full raw-data backup for Peak Builders leads, so no field is ever silently
-  // dropped (including any added in the future).
-  const allDetailsRows = clientKey === 'peakbuilders'
+  // Full raw-data backup for Peak Builders leads (San Diego + Denver), so no
+  // field is ever silently dropped (including any added in the future).
+  const allDetailsRows = clientKey.startsWith('peakbuilders')
     ? Object.entries(raw)
         .map(([k, v]) => {
           const display = v != null && typeof v === 'object' ? JSON.stringify(v) : v
