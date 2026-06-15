@@ -688,7 +688,13 @@ function RmxStyles() {
         .rmx-mobile-nav { display: flex; flex-direction: column; gap: 4px; padding: 12px 24px 20px; background: #fff; border-bottom: 1px solid var(--line); }
         .rmx-mobile-nav a { padding: 11px 4px; color: var(--ink); text-decoration: none; font-weight: 600; border-bottom: 1px solid var(--line); }
         .rmx-mobile-nav .rmx-btn { margin-top: 10px; }
-        .rmx-hero-overlay { background: linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.92) 60%, rgba(255,255,255,.9) 100%); }
+        /* Mobile hero: image as a top banner above the headline, faded out at the bottom */
+        .rmx-hero { display: block; min-height: 0; }
+        .rmx-hero-bg { position: relative; height: 320px; }
+        .rmx-hero-overlay { bottom: auto; height: 320px; background: linear-gradient(to bottom, rgba(247,245,241,0) 42%, rgba(247,245,241,.7) 80%, var(--bg) 100%); }
+        .rmx-hero-inner { display: block; padding: 26px 22px 42px; background: var(--bg); }
+        .rmx-hero-copy { max-width: none; }
+        .rmx-hero-form { max-width: none; margin-top: 26px; }
         .rmx-ctaband-inner { flex-direction: column; align-items: flex-start; gap: 18px; }
         .rmx-table-head { display: none; }
         .rmx-table-row { grid-template-columns: 1fr; gap: 0; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
