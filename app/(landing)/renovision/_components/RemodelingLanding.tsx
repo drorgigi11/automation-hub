@@ -82,6 +82,13 @@ export default function RemodelingLanding() {
 
       <ServiceAreas />
 
+      <CtaBand
+        eyebrow="Tacoma to Marysville · in your neighborhood"
+        title="Let’s start your remodel — book your free estimate today."
+        button="Get My Free Estimate"
+        onClick={openPopup}
+      />
+
       <Footer onContact={openPopup} />
 
       {popup && <LeadPopup onClose={() => setPopup(false)} />}
@@ -481,7 +488,7 @@ function LeadPopup({ onClose }: { onClose: () => void }) {
 /* --------------------------- Service areas ------------------------ */
 
 const COUNTIES = [
-  { name: 'King County', cities: ['Bellevue', 'Renton', 'Kent', 'Kirkland', 'Redmond', 'Sammamish', 'Bothell', 'Issaquah', 'Auburn', 'Federal Way', 'Shoreline', 'Kenmore'] },
+  { name: 'King County', cities: ['Seattle', 'Bellevue', 'Renton', 'Kent', 'Kirkland', 'Redmond', 'Sammamish', 'Bothell', 'Issaquah', 'Auburn', 'Federal Way', 'Shoreline', 'Kenmore'] },
   { name: 'Pierce County', cities: ['Tacoma', 'Puyallup', 'Lakewood', 'Gig Harbor', 'University Place', 'Bonney Lake', 'Sumner', 'Edgewood', 'Spanaway'] },
   { name: 'Snohomish County', cities: ['Everett', 'Marysville', 'Lynnwood', 'Edmonds', 'Mill Creek', 'Mukilteo', 'Monroe', 'Snohomish', 'Lake Stevens', 'Arlington'] },
 ]
