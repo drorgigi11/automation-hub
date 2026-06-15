@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowRight, Check, ChevronLeft, ChevronRight, ChevronDown, Play, X, Menu, Loader2,
+  ArrowRight, Check, ChevronLeft, ChevronRight, ChevronDown, Play, X, Menu, Loader2, MapPin,
 } from 'lucide-react'
 
 const WP = 'https://renovisiondesignandbuild.com/wp-content/uploads'
@@ -79,6 +79,8 @@ export default function RemodelingLanding() {
         button="Get My Free Estimate"
         onClick={openPopup}
       />
+
+      <ServiceAreas />
 
       <Footer onContact={openPopup} />
 
@@ -476,6 +478,94 @@ function LeadPopup({ onClose }: { onClose: () => void }) {
   )
 }
 
+/* --------------------------- Service areas ------------------------ */
+
+const COUNTIES = [
+  { name: 'King County', cities: ['Bellevue', 'Renton', 'Kent', 'Kirkland', 'Redmond', 'Sammamish', 'Bothell', 'Issaquah', 'Auburn', 'Federal Way', 'Shoreline', 'Kenmore'] },
+  { name: 'Pierce County', cities: ['Tacoma', 'Puyallup', 'Lakewood', 'Gig Harbor', 'University Place', 'Bonney Lake', 'Sumner', 'Edgewood', 'Spanaway'] },
+  { name: 'Snohomish County', cities: ['Everett', 'Marysville', 'Lynnwood', 'Edmonds', 'Mill Creek', 'Mukilteo', 'Monroe', 'Snohomish', 'Lake Stevens', 'Arlington'] },
+]
+
+function ServiceAreas() {
+  return (
+    <section className="rmx-section rmx-sa" id="areas">
+      <div className="rmx-section-head">
+        <p className="rmx-eyebrow">Service Areas</p>
+        <h2 className="rmx-h2">Proudly Serving Three Counties Across the Puget Sound</h2>
+        <p className="rmx-lead">From Tacoma up to Marysville — here are the communities we remodel in every week.</p>
+      </div>
+      <div className="rmx-sa-grid">
+        <div className="rmx-sa-map"><RegionMap /></div>
+        <div className="rmx-sa-cols">
+          {COUNTIES.map(c => (
+            <div key={c.name} className="rmx-sa-card">
+              <h3 className="rmx-sa-county"><MapPin size={18} /> {c.name}</h3>
+              <div className="rmx-sa-cities">
+                {c.cities.map(city => <span key={city} className="rmx-sa-city">{city}</span>)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Pin({ x, y, label }: { x: number; y: number; label: string }) {
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <path d="M0,0 C-10,-14 -17,-20 -17,-31 C-17,-40 -9,-47 0,-47 C9,-47 17,-40 17,-31 C17,-20 10,-14 0,0 Z" fill="#c8b177" stroke="#fff" strokeWidth="2" />
+      <circle cx="0" cy="-31" r="7.5" fill="#fff" />
+      <text x="24" y="-30" fontSize="18" fontWeight="700" fill="#ffffff">{label}</text>
+      <text x="24" y="-13" fontSize="11" fontWeight="600" fill="rgba(255,255,255,.6)">County</text>
+    </g>
+  )
+}
+
+function RegionMap() {
+  return (
+    <svg viewBox="0 0 460 540" role="img" aria-label="Map of King, Pierce and Snohomish counties around the Puget Sound">
+      <defs>
+        <linearGradient id="rmxLand" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1c5249" />
+          <stop offset="1" stopColor="#123f38" />
+        </linearGradient>
+        <linearGradient id="rmxWater" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#a4c9c3" />
+          <stop offset="1" stopColor="#7fb3ab" />
+        </linearGradient>
+        <path id="rmxLandPath" d="M70,30 Q35,30 35,80 L35,470 Q35,510 80,510 L385,510 Q430,510 430,465 L430,75 Q430,30 385,30 Z" />
+        <clipPath id="rmxClip"><use href="#rmxLandPath" /></clipPath>
+      </defs>
+
+      <use href="#rmxLandPath" fill="url(#rmxLand)" />
+
+      <g clipPath="url(#rmxClip)">
+        {/* Puget Sound */}
+        <path d="M20,20 L168,20 Q136,110 170,196 Q200,276 150,356 Q110,442 168,520 L20,520 Z" fill="url(#rmxWater)" />
+        {/* inlet reaching inland */}
+        <path d="M170,196 Q236,206 258,250 Q236,266 200,258 Q176,252 162,236 Z" fill="url(#rmxWater)" opacity="0.85" />
+        {/* islands */}
+        <ellipse cx="112" cy="150" rx="16" ry="9" fill="#e3ede9" opacity="0.9" />
+        <ellipse cx="96" cy="300" rx="11" ry="20" fill="#e3ede9" opacity="0.85" />
+        {/* I-5 corridor route */}
+        <path d="M300,93 C300,170 285,225 290,290 C295,360 272,405 255,447" fill="none" stroke="#c8b177" strokeWidth="3" strokeDasharray="2 9" strokeLinecap="round" opacity="0.8" />
+      </g>
+
+      {/* compass */}
+      <g transform="translate(405,62)">
+        <circle r="15" fill="rgba(255,255,255,.14)" stroke="rgba(255,255,255,.3)" />
+        <path d="M0,-8 L3.5,2 L0,-0.5 L-3.5,2 Z" fill="#c8b177" />
+        <text x="0" y="11" fontSize="8" fontWeight="700" fill="#fff" textAnchor="middle">N</text>
+      </g>
+
+      <Pin x={300} y={120} label="Snohomish" />
+      <Pin x={290} y={290} label="King" />
+      <Pin x={255} y={447} label="Pierce" />
+    </svg>
+  )
+}
+
 /* ------------------------------ Footer ---------------------------- */
 
 function Footer({ onContact }: { onContact: () => void }) {
@@ -662,6 +752,18 @@ function RmxStyles() {
       .rmx-lb-cap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; color: #fff; font-size: 15px; font-weight: 500; }
       .rmx-lb-count { color: rgba(255,255,255,.55); font-size: 13px; }
 
+      /* Service areas */
+      .rmx-sa { background: var(--bg2); }
+      .rmx-sa-grid { max-width: 1180px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 50px; align-items: center; }
+      .rmx-sa-map { display: flex; justify-content: center; }
+      .rmx-sa-map svg { width: 100%; max-width: 440px; height: auto; filter: drop-shadow(0 20px 44px rgba(15,53,47,.22)); }
+      .rmx-sa-cols { display: flex; flex-direction: column; gap: 16px; }
+      .rmx-sa-card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 22px 24px; box-shadow: 0 4px 18px rgba(0,0,0,.04); }
+      .rmx-sa-county { display: flex; align-items: center; gap: 9px; font-size: 1.2rem; font-weight: 700; color: var(--g); margin: 0 0 14px; }
+      .rmx-sa-county svg { color: var(--gold-d); }
+      .rmx-sa-cities { display: flex; flex-wrap: wrap; gap: 8px; }
+      .rmx-sa-city { font-size: 13px; font-weight: 600; color: var(--ink); background: rgba(18,63,56,.06); border: 1px solid rgba(18,63,56,.1); padding: 5px 11px; border-radius: 3px; }
+
       /* Footer */
       .rmx-footer { background: var(--g-deep); color: rgba(255,255,255,.72); padding: 40px 0; }
       .rmx-footer-inner { max-width: 1180px; margin: 0 auto; padding: 0 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
@@ -679,6 +781,9 @@ function RmxStyles() {
       }
       @media (max-width: 980px) {
         .rmx-gal { grid-template-columns: repeat(2, 1fr); }
+        .rmx-sa-grid { grid-template-columns: 1fr; gap: 34px; }
+        .rmx-sa-map { order: -1; }
+        .rmx-sa-map svg { max-width: 380px; }
       }
       @media (max-width: 820px) {
         .rmx-nav, .rmx-header-cta { display: none; }
