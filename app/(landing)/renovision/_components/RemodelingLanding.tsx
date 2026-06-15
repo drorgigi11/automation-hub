@@ -579,7 +579,7 @@ function RmxStyles() {
 
       /* Hero */
       .rmx-hero { position: relative; min-height: calc(100vh - 84px); display: flex; align-items: center; overflow: hidden; }
-      .rmx-hero-bg { position: absolute; inset: 0; background-image: url('/projects/project-01.jpg'); background-size: cover; background-position: center; }
+      .rmx-hero-bg { position: absolute; inset: 0; background-image: url('/projects/project-08.jpg'); background-size: cover; background-position: center; }
       .rmx-hero-overlay { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.9) 34%, rgba(255,255,255,.55) 56%, rgba(247,245,241,.15) 78%, rgba(247,245,241,0) 100%); }
       .rmx-hero-inner { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: 60px 40px 60px 80px; display: grid; grid-template-columns: minmax(0, 45%) minmax(420px, 460px); justify-content: space-between; align-items: center; gap: 48px; }
       .rmx-h1 { font-size: clamp(42px, 5vw, 72px); font-weight: 500; line-height: 1.05; letter-spacing: -2px; color: var(--ink); margin: 0 0 22px; }
