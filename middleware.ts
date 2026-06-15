@@ -30,6 +30,8 @@ const PUBLIC_PATHS = [
 const CUSTOM_DOMAINS: Record<string, string> = {
   'peak-builders.net': '/peakbuilders',
   'www.peak-builders.net': '/peakbuilders',
+  'go.renovisiondesignandbuild.com': '/renovision',
+  'www.go.renovisiondesignandbuild.com': '/renovision',
 }
 
 function isPublic(pathname: string): boolean {
