@@ -13,7 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  ArrowRight, Check, ChevronLeft, ChevronRight, Play, X, Menu, Loader2,
+  ArrowRight, Check, ChevronLeft, ChevronRight, ChevronDown, Play, X, Menu, Loader2,
 } from 'lucide-react'
 
 const WP = 'https://renovisiondesignandbuild.com/wp-content/uploads'
@@ -180,15 +180,10 @@ function LeadFormCard({ onSubmitted }: { onSubmitted?: () => void }) {
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [zip, setZip] = useState('')
-  const [types, setTypes] = useState<string[]>([])
+  const [projectType, setProjectType] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const guard = useRef(false)
-
-  const allSelected = types.length === PROJECT_TYPES.length
-  const toggleAll = () => setTypes(allSelected ? [] : [...PROJECT_TYPES])
-  const toggle = (t: string) =>
-    setTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -208,7 +203,8 @@ function LeadFormCard({ onSubmitted }: { onSubmitted?: () => void }) {
           name, email, phone,
           variant: 'remodeling',
           zip_code: zip,
-          interested_multiple: types,
+          interested: projectType || null,
+          interested_multiple: projectType ? [projectType] : [],
           submitted_at: new Date().toISOString(),
         }),
       })
@@ -244,19 +240,16 @@ function LeadFormCard({ onSubmitted }: { onSubmitted?: () => void }) {
         <input value={zip} onChange={e => setZip(e.target.value)} placeholder="98000" inputMode="numeric" maxLength={5} autoComplete="postal-code" />
       </label>
 
-      <div className="rmx-field">
-        <span>Project Type</span>
-        <div className="rmx-checks">
-          <button type="button" className={`rmx-check rmx-check-all${allSelected ? ' rmx-check-on' : ''}`} onClick={toggleAll}>
-            <i>{allSelected && <Check size={13} />}</i> All
-          </button>
-          {PROJECT_TYPES.map(t => (
-            <button type="button" key={t} className={`rmx-check${types.includes(t) ? ' rmx-check-on' : ''}`} onClick={() => toggle(t)}>
-              <i>{types.includes(t) && <Check size={13} />}</i> {t}
-            </button>
-          ))}
+      <label className="rmx-field">
+        <span>Project Type <em>(optional)</em></span>
+        <div className="rmx-select-wrap">
+          <select className="rmx-select" value={projectType} onChange={e => setProjectType(e.target.value)}>
+            <option value="">Select a project type…</option>
+            {PROJECT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <ChevronDown size={18} className="rmx-select-icon" />
         </div>
-      </div>
+      </label>
 
       {error && <p className="rmx-form-err">{error}</p>}
 
@@ -379,8 +372,14 @@ function HowWeWork() {
         {STEPS.map(s => (
           <div key={s.n} className="rmx-table-row">
             <div className="rmx-table-stage"><b>{s.n}</b><span>{s.stage}</span></div>
-            <div className="rmx-table-usual"><X size={15} /> <span>{s.usual}</span></div>
-            <div className="rmx-table-us"><Check size={15} /> <span>{s.us}</span></div>
+            <div className="rmx-table-usual">
+              <span className="rmx-cell-tag rmx-cell-tag-bad">What Most Contractors Do</span>
+              <span className="rmx-cell-body"><X size={15} /> <span>{s.usual}</span></span>
+            </div>
+            <div className="rmx-table-us">
+              <span className="rmx-cell-tag rmx-cell-tag-good">The Renovision Way</span>
+              <span className="rmx-cell-body"><Check size={15} /> <span>{s.us}</span></span>
+            </div>
           </div>
         ))}
       </div>
@@ -402,10 +401,8 @@ const GALLERY: Shot[] = [
   { src: '/projects/project-15.jpg', category: 'Kitchen', caption: 'U-Shaped Kitchen, Bay Window' },
   { src: '/projects/project-11.jpg', category: 'Bathroom', caption: 'Marble Walk-In Shower' },
   { src: '/projects/project-14.jpg', category: 'Whole Home', caption: 'Kitchen & Dining Great Room' },
-  { src: '/projects/project-02.jpg', category: '3D Design', caption: 'Spa-Style Bath — 3D Design' },
   { src: '/projects/project-10.jpg', category: 'Living', caption: 'Waterfront Living Room' },
   { src: '/projects/project-13.jpg', category: 'Bathroom', caption: 'Custom Wood Double Vanity' },
-  { src: '/projects/project-05.png', category: '3D Design', caption: 'Open Kitchen — 3D Design' },
   { src: '/projects/project-08.jpg', category: 'Clients', caption: 'Another Happy Homeowner' },
 ]
 
@@ -561,16 +558,15 @@ function RmxStyles() {
       .rmx-form-divider { display: block; width: 54px; height: 3px; background: var(--gold); margin: 0 0 24px; }
       .rmx-field { display: block; margin-bottom: 16px; }
       .rmx-field > span { display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.82); margin-bottom: 7px; }
+      .rmx-field > span em { font-style: normal; font-weight: 500; color: rgba(255,255,255,.5); }
       .rmx-field input { width: 100%; padding: 13px 15px; border-radius: 2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 15px; outline: none; transition: border-color .15s ease, background .15s ease; }
       .rmx-field input::placeholder { color: rgba(255,255,255,.5); }
       .rmx-field input:focus { border-color: var(--gold); background: rgba(255,255,255,.16); }
-      .rmx-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .rmx-check { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 2px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; transition: all .15s ease; }
-      .rmx-check:hover { background: rgba(255,255,255,.14); }
-      .rmx-check i { flex-shrink: 0; width: 18px; height: 18px; border-radius: 2px; border: 1.5px solid rgba(255,255,255,.45); display: flex; align-items: center; justify-content: center; color: #20180a; }
-      .rmx-check-on { background: rgba(200,177,119,.18); border-color: var(--gold); }
-      .rmx-check-on i { background: var(--gold); border-color: var(--gold); }
-      .rmx-check-all { grid-column: 1 / -1; }
+      .rmx-select-wrap { position: relative; }
+      .rmx-select { width: 100%; padding: 13px 40px 13px 15px; border-radius: 2px; background: var(--g-deep); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 15px; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; transition: border-color .15s ease; }
+      .rmx-select:focus { border-color: var(--gold); }
+      .rmx-select option { background: var(--g-deep); color: #fff; }
+      .rmx-select-icon { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.6); pointer-events: none; }
       .rmx-form-err { color: #ffd0c4; font-size: 13px; margin: 6px 0 0; }
       .rmx-form-submit { display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; margin-top: 22px; padding: 13px 18px; border: none; border-radius: 2px; background: var(--gold); color: #20180a; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: background .18s ease; }
       .rmx-form-submit:hover { background: var(--gold-d); }
@@ -638,6 +634,9 @@ function RmxStyles() {
       .rmx-table-stage { flex-direction: column; gap: 4px !important; }
       .rmx-table-stage b { color: var(--gold); font-size: 13px; }
       .rmx-table-stage span { color: #fff; font-weight: 700; }
+      .rmx-table-usual, .rmx-table-us { flex-direction: column; gap: 9px !important; }
+      .rmx-cell-body { display: flex; gap: 9px; align-items: flex-start; }
+      .rmx-cell-tag { display: none; }
       .rmx-table-usual { color: rgba(255,255,255,.62); }
       .rmx-table-usual svg { color: #d98a7a; flex-shrink: 0; margin-top: 2px; }
       .rmx-table-us { color: #fff; background: rgba(200,177,119,.1) !important; }
@@ -697,7 +696,14 @@ function RmxStyles() {
         .rmx-hero-form { max-width: none; margin-top: 26px; }
         .rmx-ctaband-inner { flex-direction: column; align-items: flex-start; gap: 18px; }
         .rmx-table-head { display: none; }
-        .rmx-table-row { grid-template-columns: 1fr; gap: 0; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .rmx-table-row { grid-template-columns: 1fr; gap: 0; border-radius: 6px; overflow: hidden; margin-bottom: 14px; border: 1px solid rgba(255,255,255,.12); }
+        .rmx-table-stage { background: rgba(255,255,255,.09) !important; flex-direction: row !important; align-items: baseline; gap: 8px !important; }
+        .rmx-table-stage span { font-size: 15px; }
+        .rmx-cell-tag { display: inline-block; align-self: flex-start; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 4px 9px; border-radius: 3px; }
+        .rmx-cell-tag-bad { background: rgba(217,138,122,.2); color: #eaa597; }
+        .rmx-cell-tag-good { background: var(--gold); color: #20180a; }
+        .rmx-table-usual { border-left: 4px solid rgba(217,138,122,.55); background: rgba(217,138,122,.07) !important; }
+        .rmx-table-us { border-left: 4px solid var(--gold); background: rgba(200,177,119,.16) !important; }
       }
       @media (max-width: 560px) {
         .rmx-hero-inner { padding: 36px 22px; }
