@@ -56,7 +56,7 @@ export default function RemodelingLanding() {
       <VideoCarousel onPlay={setVideo} />
 
       <CtaBand
-        eyebrow="500+ happy Seattle families"
+        eyebrow="500+ happy families"
         title="Your remodel could be the next success story."
         button="Start My Project"
         onClick={openPopup}
@@ -148,7 +148,6 @@ function Hero({ formRef, onScrollForm }: { formRef: React.RefObject<HTMLDivEleme
             <button className="rmx-btn rmx-btn-gold rmx-btn-lg" onClick={onScrollForm}>
               Get Your Free Estimate <ArrowRight size={18} />
             </button>
-            <a href="#testimonials" className="rmx-btn rmx-btn-outline rmx-btn-lg">Learn More</a>
           </div>
           <ul className="rmx-badges">
             {BADGES.map(b => (
@@ -201,6 +200,7 @@ function LeadFormCard({ onSubmitted }: { onSubmitted?: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name, email, phone,
+          client: 'renovision',
           variant: 'remodeling',
           zip_code: zip,
           interested: projectType || null,
@@ -302,7 +302,7 @@ function VideoCarousel({ onPlay }: { onPlay: (v: VideoT) => void }) {
       <div className="rmx-section-head">
         <p className="rmx-eyebrow">Testimonials</p>
         <h2 className="rmx-h2">Hear Their Renovation Stories</h2>
-        <p className="rmx-lead">Real Seattle homeowners on what it’s like to remodel with Renovision.</p>
+        <p className="rmx-lead">Real homeowners on what it’s like to remodel with Renovision.</p>
       </div>
       <div className="rmx-carousel">
         <button className="rmx-car-arrow rmx-car-prev" onClick={() => scroll(-1)} aria-label="Scroll left"><ChevronLeft size={24} /></button>
@@ -412,7 +412,7 @@ function Gallery({ onOpen }: { onOpen: (i: number) => void }) {
       <div className="rmx-section-head">
         <p className="rmx-eyebrow">Our Projects</p>
         <h2 className="rmx-h2">A Few of the Spaces We’ve Transformed</h2>
-        <p className="rmx-lead">Kitchens, bathrooms, outdoor living and full-home remodels across Greater Seattle. Tap any photo to view it full-size.</p>
+        <p className="rmx-lead">Kitchens, bathrooms, outdoor living and full-home remodels. Tap any photo to view it full-size.</p>
       </div>
       <div className="rmx-gal">
         {GALLERY.map((g, i) => (
@@ -487,7 +487,7 @@ function Footer({ onContact }: { onContact: () => void }) {
           {NAV_LINKS.map(l => <a key={l.label} href={l.href}>{l.label}</a>)}
           <button onClick={onContact}>Contact Us</button>
         </nav>
-        <p className="rmx-footer-fine">© 2026 Renovision Design &amp; Build. Licensed &amp; Insured. Serving Greater Seattle, Tacoma → Marysville.</p>
+        <p className="rmx-footer-fine">© 2026 Renovision Design &amp; Build. Licensed &amp; Insured. Serving Tacoma → Marysville.</p>
       </div>
     </footer>
   )
