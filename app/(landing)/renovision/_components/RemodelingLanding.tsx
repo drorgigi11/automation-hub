@@ -7,7 +7,7 @@ import {
   Check, X, ArrowRight, Phone, FileDown, BadgeCheck, Play, Quote,
   ChevronLeft, ChevronRight,
 } from 'lucide-react'
-import LeadForm from '../../_components/LeadForm'
+import LeadForm from './LeadForm'
 
 /* ------------------------------------------------------------------ *
  *  Renovision — general (all-services) long-form sales landing page.
