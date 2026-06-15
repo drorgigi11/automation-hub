@@ -1,465 +1,441 @@
 'use client'
 
-import Image from 'next/image'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  AlertTriangle, Hourglass, Wind, Lock, Timer, HardHat, ShieldCheck,
-  Check, X, ArrowRight, Phone, FileDown, BadgeCheck, Play, Quote,
-  ChevronLeft, ChevronRight,
-} from 'lucide-react'
-import LeadForm from './LeadForm'
+/* eslint-disable @next/next/no-img-element */
 
 /* ------------------------------------------------------------------ *
- *  Renovision — general (all-services) long-form sales landing page.
- *  Same "premium studio meets engineering corporation" aesthetic as the
- *  design-build page (navy / luxury-gold), but the copy spans every
- *  service: kitchens, bathrooms, full-home, basement/garage, outdoor.
- *  Lead capture reuses the existing LeadForm (variant "general"), whose
- *  first step is "What can we help you with?" — it posts to
- *  /api/webhooks/lovable and routes to /renovision/thank-you.
- *  Self-contained scoped styles (rm-*).
+ *  Renovision — /remodeling landing (redesign).
+ *  Forest-green + warm-gold, premium-yet-approachable remodeling site.
+ *  Sections: Hero (text + lead form) · Video carousel · How-we-work
+ *  table · Photo gallery — with a CTA + lead-form popup between each.
+ *  Self-contained scoped styles (rmx-*); Manrope typography.
  * ------------------------------------------------------------------ */
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import {
+  ArrowRight, Check, ChevronLeft, ChevronRight, Play, X, Menu, Loader2,
+} from 'lucide-react'
+
+const WP = 'https://renovisiondesignandbuild.com/wp-content/uploads'
+const JOHN = `${WP}/2025/06/john.webp`
+const LOGO = '/renovision-logo.png'
+
+const NAV_LINKS = [
+  { href: '#top', label: 'Main' },
+  { href: '#projects', label: 'Our Projects' },
+  { href: '#why', label: 'Why Us' },
+  { href: '#why', label: 'Our Story' },
+  { href: '#testimonials', label: 'Testimonials' },
+  { href: '#why', label: 'FAQ' },
+]
 
 export default function RemodelingLanding() {
   const formRef = useRef<HTMLDivElement>(null)
-  const [activeVideo, setActiveVideo] = useState<Testimonial | null>(null)
-  const [galleryIndex, setGalleryIndex] = useState<number | null>(null)
+  const [popup, setPopup] = useState(false)
+  const [video, setVideo] = useState<VideoT | null>(null)
+  const [lightbox, setLightbox] = useState<number | null>(null)
 
   const scrollToForm = useCallback(() => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [])
+  const openPopup = useCallback(() => setPopup(true), [])
 
   return (
-    <div className="rm-root">
-      <RmStyles />
+    <div className="rmx-root" id="top">
+      <RmxStyles />
+      <Header onContact={openPopup} />
+      <Hero formRef={formRef} onScrollForm={scrollToForm} />
 
-      <TopBar onCta={scrollToForm} />
-      <Hero onCta={scrollToForm} />
-      <Agitation />
-      <Mechanism onCta={scrollToForm} />
-      <Transformation onCta={scrollToForm} />
-      <ProjectGallery onOpen={setGalleryIndex} onCta={scrollToForm} />
-      <Testimonials onPlay={setActiveVideo} onCta={scrollToForm} />
-      <SocialProof />
-      <Difference onCta={scrollToForm} />
-      <Close formRef={formRef} />
-      <Footer />
+      <CtaBand
+        eyebrow="No pressure · No obligation"
+        title="See if your project qualifies for a FREE 3D design."
+        button="Get My Free Estimate"
+        onClick={openPopup}
+      />
 
-      {activeVideo && (
-        <VideoModal testimonial={activeVideo} onClose={() => setActiveVideo(null)} />
-      )}
-      {galleryIndex !== null && (
-        <ImageLightbox index={galleryIndex} onChange={setGalleryIndex} onClose={() => setGalleryIndex(null)} />
+      <VideoCarousel onPlay={setVideo} />
+
+      <CtaBand
+        eyebrow="500+ happy Seattle families"
+        title="Your remodel could be the next success story."
+        button="Start My Project"
+        onClick={openPopup}
+      />
+
+      <HowWeWork />
+
+      <CtaBand
+        eyebrow="One team, start to finish"
+        title="Ready for a remodel without the surprises?"
+        button="Book My Free Estimate"
+        onClick={openPopup}
+      />
+
+      <Gallery onOpen={setLightbox} />
+
+      <CtaBand
+        eyebrow="From free 3D design to finished project"
+        title="Let’s design the home you’ve always wanted."
+        button="Get My Free Estimate"
+        onClick={openPopup}
+      />
+
+      <Footer onContact={openPopup} />
+
+      {popup && <LeadPopup onClose={() => setPopup(false)} />}
+      {video && <VideoModal video={video} onClose={() => setVideo(null)} />}
+      {lightbox !== null && (
+        <ImageLightbox index={lightbox} onChange={setLightbox} onClose={() => setLightbox(null)} />
       )}
     </div>
   )
 }
 
-/* ----------------------------- Top bar ----------------------------- */
+/* ------------------------------ Header ---------------------------- */
 
-function TopBar({ onCta }: { onCta: () => void }) {
+function Header({ onContact }: { onContact: () => void }) {
+  const [menu, setMenu] = useState(false)
   return (
-    <header className="rm-topbar">
-      <div className="rm-container rm-topbar-inner">
-        <Image
-          src="/renovision-logo.png"
-          alt="Renovision Design and Build"
-          width={170}
-          height={56}
-          className="rm-logo"
-          priority
-        />
-        <button className="rm-btn rm-btn-ghost rm-topbar-cta" onClick={onCta}>
-          <Phone size={15} /> Get My Free Estimate
+    <header className="rmx-header">
+      <div className="rmx-header-inner">
+        <a href="#top" className="rmx-logo" onClick={() => setMenu(false)}>
+          <img src={LOGO} alt="Renovision Design and Build" />
+        </a>
+        <nav className="rmx-nav">
+          {NAV_LINKS.map(l => <a key={l.label} href={l.href}>{l.label}</a>)}
+        </nav>
+        <button className="rmx-btn rmx-btn-green rmx-header-cta" onClick={onContact}>
+          Contact Us <ArrowRight size={16} />
+        </button>
+        <button className="rmx-burger" aria-label="Menu" onClick={() => setMenu(m => !m)}>
+          {menu ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
+      {menu && (
+        <nav className="rmx-mobile-nav">
+          {NAV_LINKS.map(l => <a key={l.label} href={l.href} onClick={() => setMenu(false)}>{l.label}</a>)}
+          <button className="rmx-btn rmx-btn-green" onClick={() => { setMenu(false); onContact() }}>
+            Contact Us <ArrowRight size={16} />
+          </button>
+        </nav>
+      )}
     </header>
   )
 }
 
-/* --------------------------- Block 1: Hero -------------------------- */
+/* ------------------------------- Hero ----------------------------- */
 
-function Hero({ onCta }: { onCta: () => void }) {
+const BADGES = [
+  { src: `${WP}/2025/05/Google-Review-Logo.png`, label: 'Google Reviews' },
+  { src: `${WP}/2025/05/CornerStone-Services-Better-Business-Bureau-A-Rating.png`, label: 'BBB A+ Rating' },
+  { src: `${WP}/2025/05/licensed-and-insured-label-official-license-and-insurance-a-guarantee-of-quality-and-safety-png.webp`, label: 'Licensed & Insured' },
+  { src: `${WP}/2025/05/award.png`, label: 'Award-Winning Design Team' },
+]
+
+function Hero({ formRef, onScrollForm }: { formRef: React.RefObject<HTMLDivElement>; onScrollForm: () => void }) {
   return (
-    <section className="rm-hero">
-      <div className="rm-hero-overlay" />
-      <div className="rm-container rm-hero-inner">
-        <p className="rm-eyebrow rm-eyebrow-light">
-          Serving Greater Seattle · One Team for Every Room of Your Home
-        </p>
-        <h1 className="rm-h1">
-          Whatever You&apos;re Remodeling — <span className="rm-gold">Done Right, Done On Time.</span>
-        </h1>
-        <p className="rm-hero-sub">
-          Kitchen, bathroom, basement, addition or outdoor space — it&apos;s the same disciplined
-          system every time. Every decision is <strong>locked in 3D</strong> with a signed materials
-          list before demo. <strong>One dedicated crew</strong> to the finish line, and a daily photo
-          report so you&apos;re never left guessing.
-        </p>
-        <div className="rm-hero-cta">
-          <button className="rm-btn rm-btn-gold rm-btn-lg" onClick={onCta}>
-            Get My Free Project Estimate <ArrowRight size={18} />
-          </button>
-          <p className="rm-microcopy">
-            Zero pressure. Zero surprises. Just a transparent estimate for your project.
+    <section className="rmx-hero">
+      <div className="rmx-hero-bg" />
+      <div className="rmx-hero-overlay" />
+      <div className="rmx-hero-inner">
+        <div className="rmx-hero-copy">
+          <h1 className="rmx-h1">Remodel Your Home With Confidence</h1>
+          <p className="rmx-hero-trust">Licensed, Insured &amp; Backed By 500+ Happy Families</p>
+          <p className="rmx-hero-sub">
+            From Free 3D Design To Finished Project — One Team, Start To Finish.
           </p>
+          <div className="rmx-hero-cta">
+            <button className="rmx-btn rmx-btn-gold rmx-btn-lg" onClick={onScrollForm}>
+              Get Your Free Estimate <ArrowRight size={18} />
+            </button>
+            <a href="#testimonials" className="rmx-btn rmx-btn-outline rmx-btn-lg">Learn More</a>
+          </div>
+          <ul className="rmx-badges">
+            {BADGES.map(b => (
+              <li key={b.label}>
+                <img src={b.src} alt={b.label} />
+                <span>{b.label}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <ul className="rm-hero-badges">
-          <li><BadgeCheck size={16} /> Licensed &amp; Insured</li>
-          <li><BadgeCheck size={16} /> Pre-Build Lock™</li>
-          <li><BadgeCheck size={16} /> One Crew, Start to Finish</li>
-        </ul>
-        <p className="rm-asterisk">
-          *Timelines refer to site-work only. Excludes permit / inspection and supplier delays
-          outside the signed agreement.
-        </p>
+        <div className="rmx-hero-form" ref={formRef}>
+          <LeadFormCard />
+        </div>
       </div>
     </section>
   )
 }
 
-/* ------------------- Block 2: Agitation / Silent Danger ------------- */
+/* --------------------------- Lead form card ----------------------- */
 
-const TRAPS = [
-  {
-    icon: AlertTriangle,
-    tone: 'danger',
-    tag: 'Trap #1',
-    title: 'The "Allowance" Illusion',
-    sub: 'Budget Blowouts',
-    body:
-      'You sign a contract with vague material allowances. Mid-project, the supplier emails: "Out of Stock." Suddenly you\'re forced into rushed, expensive upgrade decisions. Your budget explodes before the drywall is even up.',
-  },
-  {
-    icon: Hourglass,
-    tone: 'warn',
-    tag: 'Trap #2',
-    title: 'The Disappearing Crew',
-    sub: 'Schedule Creep',
-    body:
-      'The "Under Construction" calendar lives on your fridge forever. Your contractor splits his team across five jobs. Your home sits empty for days. You text "Hey, any updates?" — and hear absolute silence.',
-  },
-  {
-    icon: Wind,
-    tone: 'dust',
-    tag: 'Trap #3',
-    title: 'The Living Warzone',
-    sub: 'Chaos & Dust',
-    body:
-      'No isolated dust barriers. Unpredictable noise interrupting your Zoom calls. Workers at random hours. You feel like a hostage in your own home, constantly apologizing to your family for the mess.',
-  },
+const PROJECT_TYPES = [
+  'Kitchen Remodel', 'Bathroom Remodel', 'Full Home Renovation', 'Roof Replacement',
+  'Garage Conversion', 'Basement Finishing', 'Room Addition', 'Outdoor Patio/Deck', 'Other',
 ]
 
-function Agitation() {
+function LeadFormCard({ onSubmitted }: { onSubmitted?: () => void }) {
+  const router = useRouter()
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [zip, setZip] = useState('')
+  const [types, setTypes] = useState<string[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const guard = useRef(false)
+
+  const allSelected = types.length === PROJECT_TYPES.length
+  const toggleAll = () => setTypes(allSelected ? [] : [...PROJECT_TYPES])
+  const toggle = (t: string) =>
+    setTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || !phone.trim() || !email.trim()) {
+      setError('Please fill in your name, phone and email.')
+      return
+    }
+    if (guard.current) return
+    guard.current = true
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/webhooks/lovable', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, email, phone,
+          variant: 'remodeling',
+          zip_code: zip,
+          interested_multiple: types,
+          submitted_at: new Date().toISOString(),
+        }),
+      })
+      if (!res.ok) throw new Error('failed')
+      if (onSubmitted) onSubmitted()
+      router.push('/renovision/thank-you')
+    } catch {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+      guard.current = false
+    }
+  }
+
   return (
-    <section className="rm-section rm-section-light">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-danger">The Ugly Truth About Remodeling in Greater Seattle</p>
-        <h2 className="rm-h2 rm-h2-dark">
-          Why Most “Affordable” Remodels End Up Costing You Thousands in Hidden Fees,
-          Lost Time &amp; Pure Frustration.
-        </h2>
-        <p className="rm-intro rm-intro-dark">
-          You’ve heard the horror stories from your neighbors. A simple bathroom update that turns
-          the house into a dusty warzone for three months. A kitchen quote that mysteriously balloons
-          by 30% halfway through. A basement that sits half-finished for a year. Most contractors
-          don’t plan to fail — they just lack a rigid system. Without one, every project — no matter
-          the room — falls into one of these three traps:
-        </p>
+    <form className="rmx-form" onSubmit={submit}>
+      <h2 className="rmx-form-title">Get Your Free Estimate</h2>
+      <span className="rmx-form-divider" />
 
-        <div className="rm-grid-3">
-          {TRAPS.map(t => {
-            const Icon = t.icon
-            return (
-              <div key={t.tag} className={`rm-trap rm-trap-${t.tone}`}>
-                <div className="rm-trap-icon"><Icon size={26} /></div>
-                <span className="rm-trap-tag">{t.tag}</span>
-                <h3 className="rm-trap-title">{t.title}</h3>
-                <p className="rm-trap-sub">{t.sub}</p>
-                <p className="rm-trap-body">{t.body}</p>
-              </div>
-            )
-          })}
-        </div>
+      <label className="rmx-field">
+        <span>Full Name</span>
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Jane Doe" autoComplete="name" />
+      </label>
+      <label className="rmx-field">
+        <span>Phone Number</span>
+        <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="(555) 555-5555" type="tel" autoComplete="tel" />
+      </label>
+      <label className="rmx-field">
+        <span>Email Address</span>
+        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" type="email" autoComplete="email" />
+      </label>
+      <label className="rmx-field">
+        <span>ZIP Code</span>
+        <input value={zip} onChange={e => setZip(e.target.value)} placeholder="98000" inputMode="numeric" maxLength={5} autoComplete="postal-code" />
+      </label>
 
-        <p className="rm-transition">
-          There’s a massive difference between a verbal promise and a managed system. You don’t just
-          need a builder — you need a <strong>Design-Build Mechanism</strong> that locks in every
-          detail, material and deadline before a single hammer is swung. Here’s how we eliminate all
-          three traps on every project we take.
-        </p>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------- Block 3: The Unique Mechanism ----------------- */
-
-const MECHANISM = [
-  {
-    icon: Lock,
-    n: '01',
-    title: 'Pre-Build Lock™',
-    tag: 'Zero Mid-Project Surprises',
-    body:
-      'No guesswork. No "allowance" traps. We lock every decision in a 3D walk-through, backed by a signed Bill of Materials (BOM) before demolition begins. You know exactly what you’re getting — down to the last tile, fixture and finish.',
-  },
-  {
-    icon: Timer,
-    n: '02',
-    title: 'SLA-Time™ with a Clear Deadline',
-    tag: 'On-Time, Guaranteed',
-    body:
-      'We measure what others only promise. Every project gets a firm, written site-work timeline before we start — and we’re held to it. No open-ended "we’ll try to finish by…" You get a date, and a plan to hit it.',
-  },
-  {
-    icon: HardHat,
-    n: '03',
-    title: 'One-Crew Focus™ + Daily Visual Reports',
-    tag: 'No Disappearing Acts',
-    body:
-      'The same dedicated crew, every single day, until handover. And to keep you in the loop, you receive a short photo report every evening — what was done today, what’s scheduled tomorrow.',
-  },
-  {
-    icon: ShieldCheck,
-    n: '04',
-    title: 'CleanBuild Protocol™',
-    tag: 'Respecting Your Home',
-    body:
-      'Your house shouldn’t feel like a construction site 24/7. Strict dust-control barriers, designated "quiet hours" (so you can take that Zoom call), and a mandatory daily clean-pass before our crew leaves.',
-  },
-]
-
-function Mechanism({ onCta }: { onCta: () => void }) {
-  return (
-    <section className="rm-section rm-section-dark">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold">Introducing the Renovision Design-Build Mechanism</p>
-        <h2 className="rm-h2 rm-h2-light">
-          We Don’t Rely on “Good Intentions.” We Rely on a Rigid, Unbreakable Protocol.
-        </h2>
-        <p className="rm-intro rm-intro-light">
-          A promise means nothing without a system to back it up. We’ve engineered the chaos out of
-          traditional remodeling — and we apply the exact same protocol whether it’s a single bathroom
-          or a whole-home renovation. Before we ever swing a hammer, we deploy a multi-layered defense
-          system built to protect your budget, your timeline and your sanity:
-        </p>
-
-        <div className="rm-grid-2">
-          {MECHANISM.map(m => {
-            const Icon = m.icon
-            return (
-              <div key={m.n} className="rm-mech">
-                <div className="rm-mech-head">
-                  <span className="rm-mech-icon"><Icon size={24} /></span>
-                  <span className="rm-mech-n">{m.n}</span>
-                </div>
-                <h3 className="rm-mech-title">{m.title}</h3>
-                <p className="rm-mech-tag">{m.tag}</p>
-                <p className="rm-mech-body">{m.body}</p>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="rm-center">
-          <button className="rm-btn rm-btn-gold rm-btn-lg" onClick={onCta}>
-            See a Sample 3D Demo &amp; Signed BOM <ArrowRight size={18} />
+      <div className="rmx-field">
+        <span>Project Type</span>
+        <div className="rmx-checks">
+          <button type="button" className={`rmx-check rmx-check-all${allSelected ? ' rmx-check-on' : ''}`} onClick={toggleAll}>
+            <i>{allSelected && <Check size={13} />}</i> All
           </button>
-        </div>
-        <p className="rm-asterisk rm-asterisk-center">
-          *SLA-Time applies to site-work only. Delays due to permits, inspections, or supply-chain
-          issues outside the signed BOM are excluded per proposal.
-        </p>
-      </div>
-    </section>
-  )
-}
-
-/* ------------- Block 4: Transformation & Before/After -------------- */
-
-const TRANSFORM = [
-  {
-    emoji: '🍳',
-    title: 'The Culinary Centerpiece',
-    label: 'Kitchens',
-    body: 'Where the family actually wants to gather. Flawless finishes, smart storage, zero compromises.',
-    eta: 'Studio precision, contractor speed',
-  },
-  {
-    emoji: '🛁',
-    title: 'The Morning Sanctuary',
-    label: 'Bathrooms',
-    body: 'From a chaotic morning rush to a daily retreat. Start your day with absolute serenity.',
-    eta: 'Spa-grade finishes, built to last',
-  },
-  {
-    emoji: '🏠',
-    title: 'More Room to Live',
-    label: 'Basements · Additions · Outdoor',
-    body: 'Finished basements, room additions and outdoor living that add real square footage and value.',
-    eta: 'Engineered for how you live',
-  },
-]
-
-function Transformation({ onCta }: { onCta: () => void }) {
-  return (
-    <section className="rm-section rm-section-light">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold-dark">The End Result: Zero Stress. Pure Elegance.</p>
-        <h2 className="rm-h2 rm-h2-dark">
-          Step Into the Space You’ve Always Deserved (Without the Remodeling Trauma).
-        </h2>
-        <p className="rm-intro rm-intro-dark">
-          A remodel isn’t just about quartz countertops or a walk-in shower. It’s about reclaiming
-          your mornings. Hosting family dinners in a kitchen that breathes. Finally finishing that
-          basement. The profound peace of walking into a space engineered precisely for your lifestyle.
-          You don’t just get a stunning aesthetic — you get the quiet pride of knowing you remodeled
-          the smart way. <em>Studio precision, matched with contractor speed.</em>
-        </p>
-
-        <BeforeAfter />
-
-        <div className="rm-grid-3 rm-grid-3-tight">
-          {TRANSFORM.map(t => (
-            <div key={t.label} className="rm-transform">
-              <div className="rm-transform-emoji">{t.emoji}</div>
-              <h3 className="rm-transform-title">{t.title}</h3>
-              <p className="rm-transform-label">{t.label}</p>
-              <p className="rm-transform-body">{t.body}</p>
-              <p className="rm-transform-eta">{t.eta}</p>
-            </div>
+          {PROJECT_TYPES.map(t => (
+            <button type="button" key={t} className={`rmx-check${types.includes(t) ? ' rmx-check-on' : ''}`} onClick={() => toggle(t)}>
+              <i>{types.includes(t) && <Check size={13} />}</i> {t}
+            </button>
           ))}
         </div>
+      </div>
 
-        <blockquote className="rm-quote">
-          “I expected the usual remodeling nightmare. Instead, they handed us back a breathtaking
-          kitchen exactly on the day the schedule said. We finally have the home we always talked
-          about.”
-          <cite>— Sarah &amp; Mark T., Greater Seattle</cite>
-        </blockquote>
+      {error && <p className="rmx-form-err">{error}</p>}
 
-        <div className="rm-center">
-          <button className="rm-btn rm-btn-dark rm-btn-lg" onClick={onCta}>
-            Browse Our Before / After Gallery <ArrowRight size={18} />
-          </button>
+      <button type="submit" className="rmx-form-submit" disabled={loading}>
+        <img src={JOHN} alt="John" className="rmx-john" />
+        <span>{loading ? 'Sending…' : 'Book Your Free Estimate With John'}</span>
+        {loading ? <Loader2 size={16} className="rmx-spin" /> : <ArrowRight size={16} />}
+      </button>
+      <p className="rmx-form-trust"><Check size={15} /> We’ll Get Back To You Within 24 Hours</p>
+    </form>
+  )
+}
+
+/* ----------------------------- CTA band --------------------------- */
+
+function CtaBand({ eyebrow, title, button, onClick }: { eyebrow: string; title: string; button: string; onClick: () => void }) {
+  return (
+    <section className="rmx-ctaband">
+      <div className="rmx-ctaband-inner">
+        <div>
+          <p className="rmx-ctaband-eyebrow">{eyebrow}</p>
+          <h3 className="rmx-ctaband-title">{title}</h3>
         </div>
+        <button className="rmx-btn rmx-btn-gold rmx-btn-lg" onClick={onClick}>
+          {button} <ArrowRight size={18} />
+        </button>
       </div>
     </section>
   )
 }
 
-function BeforeAfter() {
-  const [pos, setPos] = useState(50)
-  return (
-    <div className="rm-ba">
-      {/* TODO: replace the two gradient panels with real project photos
-          (e.g. /renovision-before.jpg and /renovision-after.jpg) */}
-      <div className="rm-ba-after">
-        <span className="rm-ba-tag rm-ba-tag-after">AFTER</span>
-      </div>
-      <div className="rm-ba-before" style={{ width: `${pos}%` }}>
-        <span className="rm-ba-tag rm-ba-tag-before">BEFORE</span>
-      </div>
-      <div className="rm-ba-divider" style={{ left: `${pos}%` }}>
-        <span className="rm-ba-handle">
-          <ArrowRight size={14} style={{ transform: 'rotate(180deg)' }} />
-          <ArrowRight size={14} />
-        </span>
-      </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={pos}
-        onChange={e => setPos(Number(e.target.value))}
-        className="rm-ba-range"
-        aria-label="Drag to compare before and after"
-      />
-    </div>
-  )
-}
+/* ------------------------- Video carousel ------------------------- */
 
-/* --------------- Block 4.4: Project Photo Gallery ----------------- */
+interface VideoT { name: string; project: string; driveId: string }
 
-interface Project {
-  src: string
-  category: string
-  caption: string
-  /* portrait images can be flagged to span 2 rows in the masonry grid */
-  tall?: boolean
-}
-
-/* Real Renovision project photos, downloaded from the client's Drive
-   folder and self-hosted under /public/projects for speed & reliability. */
-const PROJECTS: Project[] = [
-  { src: '/projects/project-01.jpg', category: 'Kitchen',  caption: 'Chef’s Kitchen with Pro Range & Stone Hearth' },
-  { src: '/projects/project-09.jpg', category: 'Kitchen',  caption: 'Bright White Shaker Kitchen' },
-  { src: '/projects/project-06.jpg', category: 'Bathroom', caption: 'Modern Master Bath with Freestanding Tub' },
-  { src: '/projects/project-03.jpg', category: 'Outdoor',  caption: 'Covered Patio & Cedar Deck' },
-  { src: '/projects/project-12.jpg', category: 'Bathroom', caption: 'Spa Bath — Tub, Walk-In Shower & Double Vanity' },
-  { src: '/projects/project-04.jpg', category: 'Kitchen',  caption: 'Open-Concept Kitchen & Living' },
-  { src: '/projects/project-07.jpg', category: 'Bathroom', caption: 'Dark Spa Bath with Mood Lighting' },
-  { src: '/projects/project-15.jpg', category: 'Kitchen',  caption: 'U-Shaped Kitchen with Bay Window' },
-  { src: '/projects/project-11.jpg', category: 'Bathroom', caption: 'Marble Walk-In Shower' },
-  { src: '/projects/project-14.jpg', category: 'Whole Home', caption: 'Kitchen & Dining Great Room' },
-  { src: '/projects/project-02.jpg', category: '3D Design', caption: 'Spa-Style Master Bath — 3D Design' },
-  { src: '/projects/project-10.jpg', category: 'Living',   caption: 'Waterfront Living Room Remodel' },
-  { src: '/projects/project-13.jpg', category: 'Bathroom', caption: 'Custom Wood Double Vanity' },
-  { src: '/projects/project-05.png', category: '3D Design', caption: 'Open Kitchen — 3D Design Preview' },
-  { src: '/projects/project-08.jpg', category: 'Clients',  caption: 'Another Happy Renovision Homeowner' },
+const VIDEOS: VideoT[] = [
+  { name: 'Maya & Lewis', project: 'Kitchen Renovation', driveId: '1M8U6cIAkCh0yRXNR9isCKKfJ4I99bcDB' },
+  { name: 'Jennifer', project: 'Wetroom Transformation', driveId: '1JOzVluFR_T-ui90U9suqBWbdDpwKxlw8' },
+  { name: 'Maria', project: 'Bathroom Remodel', driveId: '1fm3UESlPIBYjdutByizCGP0b6MNuhYg5' },
+  { name: 'Pete', project: 'Outdoor Project', driveId: '1o8_to9b3siT34t8-vV7WiYY_SalHnxQO' },
+  { name: 'Jack', project: 'Kitchen Remodel', driveId: '176JLmYNk1krSTKaCkxIS9c3KSl0F040f' },
+  { name: 'Terri & Loreli', project: 'Full-Home Remodel', driveId: '1aU95aapYzyzjhlsvZjjfb06TaVeFnMh5' },
 ]
 
-function ProjectGallery({ onOpen, onCta }: { onOpen: (i: number) => void; onCta: () => void }) {
+function VideoCarousel({ onPlay }: { onPlay: (v: VideoT) => void }) {
+  const track = useRef<HTMLDivElement>(null)
+  const scroll = (dir: number) => track.current?.scrollBy({ left: dir * 360, behavior: 'smooth' })
   return (
-    <section className="rm-section rm-section-light">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold-dark">Recent Work · Greater Seattle</p>
-        <h2 className="rm-h2 rm-h2-dark">A Few of the Spaces We’ve Transformed.</h2>
-        <p className="rm-intro rm-intro-dark">
-          Kitchens, bathrooms, outdoor living and full-home remodels — all delivered with the same
-          disciplined process. Tap any photo to view it full-size.
-        </p>
-
-        <div className="rm-gal-grid">
-          {PROJECTS.map((p, i) => (
-            <button
-              key={p.src}
-              className="rm-gal-item"
-              onClick={() => onOpen(i)}
-              aria-label={`View project: ${p.caption}`}
-            >
-              <Image
-                src={p.src}
-                alt={p.caption}
-                width={800}
-                height={600}
-                className="rm-gal-img"
-                sizes="(max-width: 560px) 100vw, (max-width: 900px) 50vw, 33vw"
-              />
-              <span className="rm-gal-overlay">
-                <span className="rm-gal-cat">{p.category}</span>
-                <span className="rm-gal-cap">{p.caption}</span>
+    <section className="rmx-section" id="testimonials">
+      <div className="rmx-section-head">
+        <p className="rmx-eyebrow">Testimonials</p>
+        <h2 className="rmx-h2">Hear Their Renovation Stories</h2>
+        <p className="rmx-lead">Real Seattle homeowners on what it’s like to remodel with Renovision.</p>
+      </div>
+      <div className="rmx-carousel">
+        <button className="rmx-car-arrow rmx-car-prev" onClick={() => scroll(-1)} aria-label="Scroll left"><ChevronLeft size={24} /></button>
+        <div className="rmx-car-track" ref={track}>
+          {VIDEOS.map(v => (
+            <button key={v.driveId} className="rmx-vid" onClick={() => onPlay(v)} aria-label={`Play ${v.name}'s video`}>
+              <img className="rmx-vid-thumb" src={`https://drive.google.com/thumbnail?id=${v.driveId}&sz=w640`} alt={`${v.name} testimonial`} loading="lazy" />
+              <span className="rmx-vid-shade" />
+              <span className="rmx-vid-play"><Play size={22} fill="currentColor" /></span>
+              <span className="rmx-vid-meta">
+                <span className="rmx-vid-name">{v.name}</span>
+                <span className="rmx-vid-project">{v.project}</span>
               </span>
             </button>
           ))}
         </div>
+        <button className="rmx-car-arrow rmx-car-next" onClick={() => scroll(1)} aria-label="Scroll right"><ChevronRight size={24} /></button>
+      </div>
+    </section>
+  )
+}
 
-        <div className="rm-center">
-          <button className="rm-btn rm-btn-gold rm-btn-lg" onClick={onCta}>
-            Start My Project <ArrowRight size={18} />
-          </button>
+function VideoModal({ video, onClose }: { video: VideoT; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
+  }, [onClose])
+  return (
+    <div className="rmx-modal" onClick={onClose} role="dialog" aria-modal="true" aria-label={`${video.name} testimonial`}>
+      <div className="rmx-modal-inner" onClick={e => e.stopPropagation()}>
+        <button className="rmx-modal-close" onClick={onClose} aria-label="Close"><X size={22} /></button>
+        <div className="rmx-modal-video">
+          <iframe src={`https://drive.google.com/file/d/${video.driveId}/preview`} allow="autoplay; fullscreen" allowFullScreen title={`${video.name} — ${video.project}`} />
         </div>
+        <div className="rmx-modal-cap"><strong>{video.name}</strong><span>{video.project}</span></div>
+      </div>
+    </div>
+  )
+}
+
+/* --------------------------- How we work -------------------------- */
+
+const STEPS = [
+  { n: '01', stage: 'Free 3D Design & Estimate', usual: 'A vague number quoted over the phone, sight unseen.', us: 'A free in-home visit, a real 3D design and a clear written estimate before you commit.' },
+  { n: '02', stage: 'One Dedicated Project Manager', usual: 'You’re bounced between salespeople, schedulers and crews.', us: 'One project manager owns your job from day one through to handover.' },
+  { n: '03', stage: 'Locked Scope & Timeline', usual: '“We’ll try to finish in a few weeks.” Then it drags for months.', us: 'A clear scope, materials list and schedule agreed up front — with updates every step.' },
+  { n: '04', stage: 'Clean, Respectful Build', usual: 'Dust everywhere and your home left a construction zone.', us: 'Dust barriers, daily clean-up and a plan so you can keep living at home.' },
+  { n: '05', stage: 'Permits & Warranty', usual: 'You chase permits, and the contractor vanishes after the check clears.', us: 'We pull every permit and stand behind the work — licensed, insured & warrantied.' },
+]
+
+function HowWeWork() {
+  return (
+    <section className="rmx-section rmx-section-green" id="why">
+      <div className="rmx-section-head">
+        <p className="rmx-eyebrow rmx-eyebrow-gold">How We Work</p>
+        <h2 className="rmx-h2 rmx-h2-light">A Better Process, From First Call to Final Walk-through</h2>
+        <p className="rmx-lead rmx-lead-light">The same five steps on every project — here’s how that compares to the usual remodeling experience.</p>
+      </div>
+      <div className="rmx-table">
+        <div className="rmx-table-head">
+          <span>Stage</span>
+          <span>The Usual Experience</span>
+          <span>The Renovision Way</span>
+        </div>
+        {STEPS.map(s => (
+          <div key={s.n} className="rmx-table-row">
+            <div className="rmx-table-stage"><b>{s.n}</b><span>{s.stage}</span></div>
+            <div className="rmx-table-usual"><X size={15} /> <span>{s.usual}</span></div>
+            <div className="rmx-table-us"><Check size={15} /> <span>{s.us}</span></div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/* ----------------------------- Gallery ---------------------------- */
+
+interface Shot { src: string; category: string; caption: string }
+const GALLERY: Shot[] = [
+  { src: '/projects/project-01.jpg', category: 'Kitchen', caption: 'Chef’s Kitchen with Pro Range' },
+  { src: '/projects/project-09.jpg', category: 'Kitchen', caption: 'Bright White Shaker Kitchen' },
+  { src: '/projects/project-06.jpg', category: 'Bathroom', caption: 'Modern Master Bath' },
+  { src: '/projects/project-03.jpg', category: 'Outdoor', caption: 'Covered Patio & Cedar Deck' },
+  { src: '/projects/project-12.jpg', category: 'Bathroom', caption: 'Spa Bath & Double Vanity' },
+  { src: '/projects/project-04.jpg', category: 'Kitchen', caption: 'Open-Concept Kitchen & Living' },
+  { src: '/projects/project-07.jpg', category: 'Bathroom', caption: 'Dark Spa Bath' },
+  { src: '/projects/project-15.jpg', category: 'Kitchen', caption: 'U-Shaped Kitchen, Bay Window' },
+  { src: '/projects/project-11.jpg', category: 'Bathroom', caption: 'Marble Walk-In Shower' },
+  { src: '/projects/project-14.jpg', category: 'Whole Home', caption: 'Kitchen & Dining Great Room' },
+  { src: '/projects/project-02.jpg', category: '3D Design', caption: 'Spa-Style Bath — 3D Design' },
+  { src: '/projects/project-10.jpg', category: 'Living', caption: 'Waterfront Living Room' },
+  { src: '/projects/project-13.jpg', category: 'Bathroom', caption: 'Custom Wood Double Vanity' },
+  { src: '/projects/project-05.png', category: '3D Design', caption: 'Open Kitchen — 3D Design' },
+  { src: '/projects/project-08.jpg', category: 'Clients', caption: 'Another Happy Homeowner' },
+]
+
+function Gallery({ onOpen }: { onOpen: (i: number) => void }) {
+  return (
+    <section className="rmx-section" id="projects">
+      <div className="rmx-section-head">
+        <p className="rmx-eyebrow">Our Projects</p>
+        <h2 className="rmx-h2">A Few of the Spaces We’ve Transformed</h2>
+        <p className="rmx-lead">Kitchens, bathrooms, outdoor living and full-home remodels across Greater Seattle. Tap any photo to view it full-size.</p>
+      </div>
+      <div className="rmx-gal">
+        {GALLERY.map((g, i) => (
+          <button key={g.src} className="rmx-gal-item" onClick={() => onOpen(i)} aria-label={`View ${g.caption}`}>
+            <img src={g.src} alt={g.caption} loading="lazy" />
+            <span className="rmx-gal-overlay">
+              <span className="rmx-gal-cat">{g.category}</span>
+              <span className="rmx-gal-cap">{g.caption}</span>
+            </span>
+          </button>
+        ))}
       </div>
     </section>
   )
 }
 
 function ImageLightbox({ index, onChange, onClose }: { index: number; onChange: (i: number) => void; onClose: () => void }) {
-  const total = PROJECTS.length
+  const total = GALLERY.length
   const prev = useCallback(() => onChange((index - 1 + total) % total), [index, total, onChange])
   const next = useCallback(() => onChange((index + 1) % total), [index, total, onChange])
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -468,337 +444,53 @@ function ImageLightbox({ index, onChange, onClose }: { index: number; onChange: 
     }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [onClose, prev, next])
-
-  const p = PROJECTS[index]
-
+  const g = GALLERY[index]
   return (
-    <div className="rm-lb" onClick={onClose} role="dialog" aria-modal="true" aria-label={p.caption}>
-      <button className="rm-lb-close" onClick={onClose} aria-label="Close"><X size={24} /></button>
-      <button className="rm-lb-nav rm-lb-prev" onClick={e => { e.stopPropagation(); prev() }} aria-label="Previous">
-        <ChevronLeft size={30} />
-      </button>
-      <div className="rm-lb-stage" onClick={e => e.stopPropagation()}>
-        <Image
-          src={p.src}
-          alt={p.caption}
-          width={1600}
-          height={1200}
-          className="rm-lb-img"
-          sizes="90vw"
-          priority
-        />
-        <div className="rm-lb-caption">
-          <span className="rm-gal-cat">{p.category}</span>
-          <span>{p.caption}</span>
-          <span className="rm-lb-count">{index + 1} / {total}</span>
-        </div>
+    <div className="rmx-lb" onClick={onClose} role="dialog" aria-modal="true" aria-label={g.caption}>
+      <button className="rmx-lb-close" onClick={onClose} aria-label="Close"><X size={24} /></button>
+      <button className="rmx-lb-nav rmx-lb-prev" onClick={e => { e.stopPropagation(); prev() }} aria-label="Previous"><ChevronLeft size={30} /></button>
+      <div className="rmx-lb-stage" onClick={e => e.stopPropagation()}>
+        <img src={g.src} alt={g.caption} />
+        <div className="rmx-lb-cap"><span className="rmx-gal-cat">{g.category}</span><span>{g.caption}</span><span className="rmx-lb-count">{index + 1} / {total}</span></div>
       </div>
-      <button className="rm-lb-nav rm-lb-next" onClick={e => { e.stopPropagation(); next() }} aria-label="Next">
-        <ChevronRight size={30} />
-      </button>
+      <button className="rmx-lb-nav rmx-lb-next" onClick={e => { e.stopPropagation(); next() }} aria-label="Next"><ChevronRight size={30} /></button>
     </div>
   )
 }
 
-/* ------------- Block 4.5: Video Testimonials Gallery -------------- */
+/* ------------------------------ Popup ----------------------------- */
 
-interface Testimonial {
-  name: string
-  location: string
-  project: string
-  driveId: string
-  /* gradient index 0-5 for the card background */
-  tone: number
-}
-
-/* Real client testimonial videos (Drive folder shared by the client).
-   For these to play for site visitors, the Drive files must be shared
-   "Anyone with the link → Viewer". Source folder:
-   https://drive.google.com/drive/folders/1r15ab12dqDjvYU9CS6saF-ToqsFsYkEr */
-const TESTIMONIALS: Testimonial[] = [
-  { name: 'Jack',            location: 'Greater Seattle', project: 'Kitchen Remodel',   driveId: '176JLmYNk1krSTKaCkxIS9c3KSl0F040f', tone: 0 },
-  { name: 'Terri & Loreli',  location: 'Greater Seattle', project: 'Full-Home Remodel', driveId: '1aU95aapYzyzjhlsvZjjfb06TaVeFnMh5', tone: 1 },
-  { name: 'Maria',           location: 'Greater Seattle', project: 'Bathroom Remodel',  driveId: '1fm3UESlPIBYjdutByizCGP0b6MNuhYg5', tone: 2 },
-  { name: 'Maya Lewis',      location: 'Greater Seattle', project: 'Kitchen Remodel',   driveId: '1M8U6cIAkCh0yRXNR9isCKKfJ4I99bcDB', tone: 3 },
-  { name: 'Pete',            location: 'Greater Seattle', project: 'Outdoor Living',    driveId: '1o8_to9b3siT34t8-vV7WiYY_SalHnxQO', tone: 4 },
-  { name: 'Jennifer',        location: 'Greater Seattle', project: 'Bathroom Remodel',  driveId: '1JOzVluFR_T-ui90U9suqBWbdDpwKxlw8', tone: 5 },
-]
-
-function initials(name: string) {
-  return name
-    .replace(/&/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(w => w[0].toUpperCase())
-    .join('')
-}
-
-function Testimonials({ onPlay, onCta }: { onPlay: (t: Testimonial) => void; onCta: () => void }) {
-  return (
-    <section className="rm-section rm-section-vids">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold">Real Clients · Real Words · Unscripted</p>
-        <h2 className="rm-h2 rm-h2-light">Hear It Straight From Our Homeowners.</h2>
-        <p className="rm-intro rm-intro-light">
-          We could keep telling you how we work — but it lands differently coming from the families
-          who lived through the remodel. Tap any story below to watch their unedited take on the
-          process, the crew and the finished result.
-        </p>
-
-        <div className="rm-vid-grid">
-          {TESTIMONIALS.map(t => (
-            <button
-              key={t.driveId}
-              className={`rm-vid-card rm-vid-tone-${t.tone}`}
-              onClick={() => onPlay(t)}
-              aria-label={`Play ${t.name}'s video testimonial`}
-            >
-              <Quote className="rm-vid-quote" size={28} />
-              <span className="rm-vid-avatar">{initials(t.name)}</span>
-              <span className="rm-vid-play"><Play size={22} fill="currentColor" /></span>
-              <span className="rm-vid-meta">
-                <span className="rm-vid-name">{t.name}</span>
-                <span className="rm-vid-project">{t.project} · {t.location}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="rm-center">
-          <button className="rm-btn rm-btn-gold rm-btn-lg" onClick={onCta}>
-            Get the Same Result for Your Home <ArrowRight size={18} />
-          </button>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function VideoModal({ testimonial, onClose }: { testimonial: Testimonial; onClose: () => void }) {
+function LeadPopup({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
-    }
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [onClose])
-
   return (
-    <div className="rm-modal" onClick={onClose} role="dialog" aria-modal="true" aria-label={`${testimonial.name} video testimonial`}>
-      <div className="rm-modal-inner" onClick={e => e.stopPropagation()}>
-        <button className="rm-modal-close" onClick={onClose} aria-label="Close video">
-          <X size={22} />
-        </button>
-        <div className="rm-modal-video">
-          <iframe
-            src={`https://drive.google.com/file/d/${testimonial.driveId}/preview`}
-            allow="autoplay; fullscreen"
-            allowFullScreen
-            title={`${testimonial.name} — ${testimonial.project}`}
-          />
-        </div>
-        <div className="rm-modal-caption">
-          <strong>{testimonial.name}</strong>
-          <span>{testimonial.project} · {testimonial.location}</span>
-        </div>
+    <div className="rmx-popup" onClick={onClose} role="dialog" aria-modal="true" aria-label="Get your free estimate">
+      <div className="rmx-popup-inner" onClick={e => e.stopPropagation()}>
+        <button className="rmx-popup-close" onClick={onClose} aria-label="Close"><X size={22} /></button>
+        <LeadFormCard onSubmitted={onClose} />
       </div>
     </div>
   )
 }
 
-/* ----------- Block 5: Social Proof / Proof-Stack ------------------- */
+/* ------------------------------ Footer ---------------------------- */
 
-const STATS = [
-  { emoji: '📊', value: '90%', label: 'On-Time Completion Rate', note: 'Across every project type — kitchens, baths, basements and additions. We track it on every job.' },
-  { emoji: '📉', value: '< 8%', label: 'Change-Order (CO) Rate', note: 'While the industry is plagued by budget blowouts, our Pre-Build Lock™ keeps mid-project changes minimal.' },
-  { emoji: '🧹', value: '4.8/5', label: 'Avg. Site-Cleanliness Score', note: 'Rated by clients at handover. Our CleanBuild Protocol™ keeps your home a home, not a hazard zone.' },
-  { emoji: '🤝', value: '100%', label: 'Dedicated Crew Consistency', note: 'With One-Crew Focus™, the team that starts your project is the team that finishes it.' },
-]
-
-function SocialProof() {
+function Footer({ onContact }: { onContact: () => void }) {
   return (
-    <section className="rm-section rm-section-navy">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold">Proudly Serving Greater Seattle, Tacoma &amp; Marysville</p>
-        <h2 className="rm-h2 rm-h2-light">Don’t Take Our Word for It. Look at the Numbers.</h2>
-        <p className="rm-intro rm-intro-light">
-          In remodeling, everyone promises “high quality” and “great service.” Those words are
-          meaningless unless you can measure them. That’s why we operate with radical transparency —
-          tracking performance on every project so our SLA-Time™ and Pre-Build Lock™ are never empty
-          slogans. Here’s our Proof-Stack from the last quarter:
-        </p>
-
-        <div className="rm-grid-4">
-          {STATS.map(s => (
-            <div key={s.label} className="rm-stat">
-              <div className="rm-stat-emoji">{s.emoji}</div>
-              <div className="rm-stat-value">{s.value}</div>
-              <div className="rm-stat-label">{s.label}</div>
-              <p className="rm-stat-note">{s.note}</p>
-            </div>
-          ))}
-        </div>
-
-        <blockquote className="rm-quote rm-quote-light">
-          “With two kids and a dog, we couldn’t afford a remodeling nightmare. The team set up dust
-          barriers on day one and actually respected the ‘quiet hours’ we requested for our home
-          office. The daily photo reports kept us completely sane.”
-          <cite>— Emily R., Tacoma</cite>
-        </blockquote>
-      </div>
-    </section>
-  )
-}
-
-/* ----- Block 6: How Renovision Does Remodeling Differently -------- */
-
-const DIFFERENCE = [
-  {
-    typical: 'A rough estimate based on a general idea',
-    renovision: 'A clear project proposal based on your actual goals, space, and scope',
-  },
-  {
-    typical: 'You have to imagine how the finished space will look',
-    renovision: 'We help you plan the design before work begins, including 3D design for eligible kitchen and bathroom projects',
-  },
-  {
-    typical: 'The price feels unclear until the project is already moving',
-    renovision: 'We review the scope, materials, and expectations upfront so you understand what you are getting',
-  },
-  {
-    typical: 'Large payments before real progress is made',
-    renovision: 'A more structured process built around project progress and clear communication',
-  },
-  {
-    typical: 'You deal with confusion between sales, crews, and project details',
-    renovision: 'You get personal guidance from a dedicated project manager',
-  },
-  {
-    typical: 'The contractor disappears after signing',
-    renovision: 'Renovision is licensed, insured, and stands behind the work with a written warranty',
-  },
-  {
-    typical: 'You feel pressured to make a quick decision',
-    renovision: 'We start with a free estimate and consultation, with no obligation',
-  },
-]
-
-function Difference({ onCta }: { onCta: () => void }) {
-  return (
-    <section className="rm-section rm-section-light">
-      <div className="rm-container">
-        <p className="rm-eyebrow rm-eyebrow-gold-dark">The Renovision Difference</p>
-        <h2 className="rm-h2 rm-h2-dark">How Renovision Does Remodeling Differently</h2>
-        <p className="rm-intro rm-intro-dark">
-          Most remodeling problems start before construction begins: vague estimates, unclear designs,
-          large upfront payments, and surprise changes once the work has already started. At Renovision
-          Design &amp; Build, we believe homeowners deserve a clearer, more organized remodeling process
-          from day one.
-        </p>
-
-        <div className="rm-table rm-table-2">
-          <div className="rm-table-2-head">
-            <div className="rm-table-cell rm-table-typical-head">The Typical Remodeling Experience</div>
-            <div className="rm-table-cell rm-table-judah-head">The Renovision Way</div>
-          </div>
-          {DIFFERENCE.map(row => (
-            <div key={row.typical} className="rm-table-2-row">
-              <div className="rm-table-cell rm-table-industry">
-                <X size={16} className="rm-x" /> <span>{row.typical}</span>
-              </div>
-              <div className="rm-table-cell rm-table-judah">
-                <Check size={16} className="rm-check" /> <span>{row.renovision}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="rm-diff-close">
-          <h3 className="rm-diff-h3">A Better Remodel Starts With a Better Process</h3>
-          <p className="rm-diff-p">
-            Whether you are planning a kitchen remodel, bathroom remodel, deck, flooring project, or a
-            larger home upgrade, our goal is simple: help you understand the project clearly before you
-            commit.
-          </p>
-          <h3 className="rm-diff-h3">Ready to plan your remodel?</h3>
-          <p className="rm-diff-p">
-            Request your free estimate today and see how Renovision can help bring your project to life.
-          </p>
-          <div className="rm-center" style={{ marginTop: 28 }}>
-            <button className="rm-btn rm-btn-gold rm-btn-lg" onClick={onCta}>
-              Get My Free Estimate <ArrowRight size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ------------------- Block 7: The Close --------------------------- */
-
-function Close({ formRef }: { formRef: React.RefObject<HTMLDivElement> }) {
-  return (
-    <section className="rm-section rm-section-close">
-      <div className="rm-container rm-close-grid" ref={formRef}>
-        <div className="rm-close-copy">
-          <p className="rm-eyebrow rm-eyebrow-gold-dark">Your Next Step: Zero Pressure. Zero Commitment.</p>
-          <h2 className="rm-h2 rm-h2-dark">
-            Tell Us What You&apos;re Remodeling — Get a Transparent Estimate.
-          </h2>
-          <p className="rm-intro rm-intro-dark">
-            The biggest fear in remodeling is the unknown cost. You deserve absolute clarity before
-            you ever let a contractor into your home. Start with the form — just tell us which project
-            you have in mind — and we’ll walk you through our transparent 3-Tier Budget Model (Basic,
-            Plus, Premium). You’ll know exactly what to expect, with no strings attached.
-          </p>
-
-          <div className="rm-guarantee">
-            <ShieldCheck size={28} className="rm-guarantee-icon" />
-            <div>
-              <strong>The Renovision 30-Day Price-Lock™</strong>
-              <p>
-                If we move forward with a home visit and a formal quote, your price is locked and
-                guaranteed for 30 full days. No sudden markups. No expiration-date pressure. Just an
-                honest, transparent number you can trust.
-              </p>
-            </div>
-          </div>
-
-          <p className="rm-softfall">
-            <FileDown size={16} /> Not ready to talk yet? Protect yourself from bad contractors —
-            ask for our free 1-page checklist: <em>“10 Critical Questions to Ask Any Seattle
-            Remodeling Contractor Before You Hire Them.”</em>
-          </p>
-        </div>
-
-        <div className="rm-form-wrap">
-          <LeadForm variant="general" />
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ----------------------------- Footer ----------------------------- */
-
-function Footer() {
-  return (
-    <footer className="rm-footer">
-      <div className="rm-container">
-        <p>© 2026 Renovision Design and Build. All rights reserved. Licensed &amp; Insured.</p>
-        <p className="rm-footer-sub">
-          Serving Greater Seattle, Tacoma &amp; Marysville. SLA applies to site-work only; permits,
-          inspections and external supply-chain delays excluded per signed agreement.
-        </p>
+    <footer className="rmx-footer">
+      <div className="rmx-footer-inner">
+        <img src={LOGO} alt="Renovision Design and Build" className="rmx-footer-logo" />
+        <nav className="rmx-footer-nav">
+          {NAV_LINKS.map(l => <a key={l.label} href={l.href}>{l.label}</a>)}
+          <button onClick={onContact}>Contact Us</button>
+        </nav>
+        <p className="rmx-footer-fine">© 2026 Renovision Design &amp; Build. Licensed &amp; Insured. Serving Greater Seattle, Tacoma → Marysville.</p>
       </div>
     </footer>
   )
@@ -806,288 +498,209 @@ function Footer() {
 
 /* --------------------------- Scoped styles ------------------------ */
 
-function RmStyles() {
+function RmxStyles() {
   return (
     <style>{`
-      .rm-root {
-        --rm-ink: #0b0f17;
-        --rm-navy: #0d1b2a;
-        --rm-navy-2: #11263d;
-        --rm-gold: #c9a24b;
-        --rm-gold-bright: #e0b84c;
-        --rm-light: #f6f5f2;
-        --rm-text: #1c2330;
-        --rm-muted: #5b6573;
-        --rm-line: rgba(0,0,0,0.08);
-        font-family: 'Poppins', system-ui, sans-serif;
-        color: var(--rm-text);
-        background: var(--rm-light);
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+      .rmx-root, .rmx-root * { font-family: 'Manrope', system-ui, -apple-system, sans-serif !important; }
+      .rmx-root {
+        --g: #123f38;
+        --g-deep: #0f352f;
+        --gold: #c8b177;
+        --gold-d: #b39a5d;
+        --ink: #242424;
+        --muted: #5f6360;
+        --bg: #ffffff;
+        --bg2: #f7f5f1;
+        --line: rgba(0,0,0,.09);
+        color: var(--ink);
+        background: var(--bg);
+        scroll-behavior: smooth;
         overflow-x: hidden;
       }
-      .rm-container { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-      .rm-center { text-align: center; margin-top: 36px; }
+      .rmx-root img { max-width: 100%; }
 
-      /* Buttons */
-      .rm-btn {
-        display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-        border: none; cursor: pointer; border-radius: 9px; font-weight: 600;
-        font-size: 15px; padding: 13px 22px; transition: transform .15s ease, opacity .15s ease, background .2s ease;
-        letter-spacing: .01em;
-      }
-      .rm-btn:hover { transform: translateY(-1px); }
-      .rm-btn-lg { font-size: 16px; padding: 17px 30px; }
-      .rm-btn-gold { background: linear-gradient(135deg, var(--rm-gold-bright), var(--rm-gold)); color: #1a1306; box-shadow: 0 8px 24px rgba(201,162,75,.35); }
-      .rm-btn-gold:hover { box-shadow: 0 10px 30px rgba(201,162,75,.5); }
-      .rm-btn-dark { background: var(--rm-ink); color: #fff; }
-      .rm-btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,.35); color: #fff; padding: 9px 16px; font-size: 13px; }
-      .rm-btn-ghost:hover { background: rgba(255,255,255,.1); }
+      /* Buttons — squared, not pill */
+      .rmx-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: none; cursor: pointer; border-radius: 3px; font-weight: 700; font-size: 15px; padding: 13px 24px; transition: background .18s ease, transform .15s ease, box-shadow .18s ease; text-decoration: none; line-height: 1; }
+      .rmx-btn:hover { transform: translateY(-1px); }
+      .rmx-btn-lg { font-size: 16px; padding: 17px 30px; }
+      .rmx-btn-gold { background: var(--gold); color: #20180a; }
+      .rmx-btn-gold:hover { background: var(--gold-d); }
+      .rmx-btn-green { background: var(--g); color: #fff; }
+      .rmx-btn-green:hover { background: var(--g-deep); }
+      .rmx-btn-outline { background: transparent; border: 1.5px solid var(--g); color: var(--g); }
+      .rmx-btn-outline:hover { background: rgba(18,63,56,.06); }
 
-      /* Top bar */
-      .rm-topbar { position: sticky; top: 0; z-index: 50; background: rgba(11,15,23,.92); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,.08); }
-      .rm-topbar-inner { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; padding-bottom: 12px; }
-      .rm-logo { height: 44px; width: auto; filter: brightness(0) invert(1); }
-
-      /* Eyebrows / headings */
-      .rm-eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 600; margin-bottom: 18px; }
-      .rm-eyebrow-light { color: var(--rm-gold-bright); }
-      .rm-eyebrow-gold { color: var(--rm-gold-bright); }
-      .rm-eyebrow-gold-dark { color: #a9842f; }
-      .rm-eyebrow-danger { color: #c0392b; }
-      .rm-h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 700; line-height: 1.05; letter-spacing: -.02em; color: #fff; margin: 0 0 22px; }
-      .rm-gold { color: var(--rm-gold-bright); }
-      .rm-h2 { font-size: clamp(1.5rem, 3.4vw, 2.4rem); font-weight: 700; line-height: 1.18; letter-spacing: -.01em; margin: 0 0 20px; max-width: 880px; }
-      .rm-h2-light { color: #fff; }
-      .rm-h2-dark { color: var(--rm-text); }
-      .rm-intro { font-size: clamp(1rem, 1.4vw, 1.12rem); line-height: 1.7; max-width: 820px; margin: 0 0 40px; }
-      .rm-intro-light { color: rgba(255,255,255,.78); }
-      .rm-intro-dark { color: var(--rm-muted); }
-
-      /* Sections */
-      .rm-section { padding: clamp(64px, 9vw, 110px) 0; }
-      .rm-section-light { background: var(--rm-light); }
-      .rm-section-dark { background: radial-gradient(120% 120% at 50% 0%, #14213a 0%, var(--rm-ink) 70%); }
-      .rm-section-navy { background: linear-gradient(180deg, var(--rm-navy) 0%, var(--rm-navy-2) 100%); }
-      .rm-section-close { background: linear-gradient(180deg, #ffffff 0%, var(--rm-light) 100%); }
+      /* Header */
+      .rmx-header { position: sticky; top: 0; z-index: 60; height: 84px; background: #fff; border-bottom: 1px solid var(--line); }
+      .rmx-header-inner { max-width: 1500px; margin: 0 auto; height: 84px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+      .rmx-logo img { height: 50px; width: auto; display: block; }
+      .rmx-nav { display: flex; gap: 30px; }
+      .rmx-nav a { color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 600; transition: color .15s ease; }
+      .rmx-nav a:hover { color: var(--g); }
+      .rmx-burger { display: none; background: none; border: none; color: var(--g); cursor: pointer; }
+      .rmx-mobile-nav { display: none; }
 
       /* Hero */
-      .rm-hero { position: relative; background: linear-gradient(135deg, #0d1b2a 0%, #0b0f17 55%, #14213a 100%); padding: clamp(72px, 11vw, 150px) 0 clamp(60px, 8vw, 96px); overflow: hidden; }
-      .rm-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(60% 60% at 75% 15%, rgba(201,162,75,.18) 0%, transparent 60%); pointer-events: none; }
-      .rm-hero-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(11,15,23,.55), transparent 70%); }
-      .rm-hero-inner { position: relative; z-index: 2; max-width: 880px; }
-      .rm-hero-sub { font-size: clamp(1.05rem, 1.6vw, 1.25rem); line-height: 1.65; color: rgba(255,255,255,.82); max-width: 680px; margin: 0 0 32px; }
-      .rm-hero-sub strong { color: var(--rm-gold-bright); font-weight: 600; }
-      .rm-hero-cta { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-      .rm-microcopy { font-size: 13px; color: rgba(255,255,255,.6); margin: 0; }
-      .rm-hero-badges { list-style: none; display: flex; flex-wrap: wrap; gap: 22px; padding: 0; margin: 36px 0 0; }
-      .rm-hero-badges li { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: rgba(255,255,255,.85); }
-      .rm-hero-badges svg { color: var(--rm-gold-bright); }
-      .rm-asterisk { font-size: 11.5px; color: rgba(255,255,255,.45); margin: 28px 0 0; max-width: 620px; line-height: 1.5; }
-      .rm-asterisk-center { text-align: center; margin-left: auto; margin-right: auto; color: var(--rm-muted); }
+      .rmx-hero { position: relative; min-height: calc(100vh - 84px); display: flex; align-items: center; overflow: hidden; }
+      .rmx-hero-bg { position: absolute; inset: 0; background-image: url('/projects/project-10.jpg'); background-size: cover; background-position: center; }
+      .rmx-hero-overlay { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.9) 34%, rgba(255,255,255,.55) 56%, rgba(247,245,241,.15) 78%, rgba(247,245,241,0) 100%); }
+      .rmx-hero-inner { position: relative; z-index: 2; width: 100%; max-width: 1500px; margin: 0 auto; padding: 60px 40px 60px 80px; display: grid; grid-template-columns: minmax(0, 45%) minmax(420px, 460px); justify-content: space-between; align-items: center; gap: 48px; }
+      .rmx-h1 { font-size: clamp(42px, 5vw, 72px); font-weight: 500; line-height: 1.05; letter-spacing: -2px; color: var(--ink); margin: 0 0 22px; }
+      .rmx-hero-trust { font-size: clamp(18px, 1.6vw, 22px); font-weight: 800; color: var(--g); margin: 0 0 14px; }
+      .rmx-hero-sub { font-size: clamp(17px, 1.3vw, 20px); line-height: 1.55; color: var(--muted); margin: 0 0 30px; max-width: 520px; }
+      .rmx-hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+      .rmx-badges { list-style: none; display: flex; flex-wrap: wrap; gap: 14px 26px; padding: 0; margin: 40px 0 0; }
+      .rmx-badges li { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--ink); }
+      .rmx-badges img { height: 30px; width: auto; object-fit: contain; }
 
-      /* Grids */
-      .rm-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-      .rm-grid-3-tight { gap: 20px; margin-top: 48px; }
-      .rm-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px; }
-      .rm-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+      /* Lead form card */
+      .rmx-hero-form { width: 100%; }
+      .rmx-form { background: linear-gradient(160deg, var(--g) 0%, var(--g-deep) 100%); border-radius: 2px; padding: 40px; box-shadow: 0 30px 70px rgba(15,53,47,.32); }
+      .rmx-form-title { font-size: 26px; font-weight: 700; color: #fff; margin: 0 0 12px; letter-spacing: -.5px; }
+      .rmx-form-divider { display: block; width: 54px; height: 3px; background: var(--gold); margin: 0 0 24px; }
+      .rmx-field { display: block; margin-bottom: 16px; }
+      .rmx-field > span { display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.82); margin-bottom: 7px; }
+      .rmx-field input { width: 100%; padding: 13px 15px; border-radius: 2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 15px; outline: none; transition: border-color .15s ease, background .15s ease; }
+      .rmx-field input::placeholder { color: rgba(255,255,255,.5); }
+      .rmx-field input:focus { border-color: var(--gold); background: rgba(255,255,255,.16); }
+      .rmx-checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .rmx-check { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 2px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; transition: all .15s ease; }
+      .rmx-check:hover { background: rgba(255,255,255,.14); }
+      .rmx-check i { flex-shrink: 0; width: 18px; height: 18px; border-radius: 2px; border: 1.5px solid rgba(255,255,255,.45); display: flex; align-items: center; justify-content: center; color: #20180a; }
+      .rmx-check-on { background: rgba(200,177,119,.18); border-color: var(--gold); }
+      .rmx-check-on i { background: var(--gold); border-color: var(--gold); }
+      .rmx-check-all { grid-column: 1 / -1; }
+      .rmx-form-err { color: #ffd0c4; font-size: 13px; margin: 6px 0 0; }
+      .rmx-form-submit { display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%; margin-top: 22px; padding: 13px 18px; border: none; border-radius: 2px; background: var(--gold); color: #20180a; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: background .18s ease; }
+      .rmx-form-submit:hover { background: var(--gold-d); }
+      .rmx-form-submit:disabled { opacity: .7; cursor: default; }
+      .rmx-john { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.6); }
+      .rmx-spin { animation: rmxspin 1s linear infinite; }
+      @keyframes rmxspin { to { transform: rotate(360deg); } }
+      .rmx-form-trust { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; color: rgba(255,255,255,.85); margin: 16px 0 0; }
+      .rmx-form-trust svg { color: var(--gold); }
 
-      /* Traps */
-      .rm-trap { background: #fff; border: 1px solid var(--rm-line); border-radius: 14px; padding: 30px 26px; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
-      .rm-trap-icon { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
-      .rm-trap-danger .rm-trap-icon { background: rgba(192,57,43,.1); color: #c0392b; }
-      .rm-trap-warn .rm-trap-icon { background: rgba(201,162,75,.14); color: #a9842f; }
-      .rm-trap-dust .rm-trap-icon { background: rgba(91,101,115,.12); color: #5b6573; }
-      .rm-trap-tag { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--rm-muted); }
-      .rm-trap-title { font-size: 1.2rem; font-weight: 700; margin: 8px 0 2px; color: var(--rm-text); }
-      .rm-trap-sub { font-size: 13px; font-weight: 600; color: #c0392b; margin: 0 0 14px; }
-      .rm-trap-warn .rm-trap-sub { color: #a9842f; }
-      .rm-trap-dust .rm-trap-sub { color: #5b6573; }
-      .rm-trap-body { font-size: 14.5px; line-height: 1.65; color: var(--rm-muted); margin: 0; }
-      .rm-transition { margin: 44px auto 0; max-width: 760px; text-align: center; font-size: 1.08rem; line-height: 1.65; color: var(--rm-text); }
-      .rm-transition strong { color: #a9842f; }
+      /* Sections */
+      .rmx-section { padding: clamp(60px, 8vw, 104px) 0; scroll-margin-top: 84px; }
+      .rmx-section-green { background: linear-gradient(170deg, var(--g) 0%, var(--g-deep) 100%); }
+      .rmx-section-head { max-width: 820px; margin: 0 auto; padding: 0 24px; text-align: center; }
+      .rmx-eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: 12px; font-weight: 700; color: var(--gold-d); margin: 0 0 12px; }
+      .rmx-eyebrow-gold { color: var(--gold); }
+      .rmx-h2 { font-size: clamp(28px, 3.6vw, 42px); font-weight: 700; line-height: 1.15; letter-spacing: -1px; color: var(--ink); margin: 0 0 14px; }
+      .rmx-h2-light { color: #fff; }
+      .rmx-lead { font-size: 18px; line-height: 1.6; color: var(--muted); margin: 0 0 44px; }
+      .rmx-lead-light { color: rgba(255,255,255,.8); }
 
-      /* Mechanism */
-      .rm-mech { background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border: 1px solid rgba(201,162,75,.22); border-radius: 16px; padding: 30px 28px; }
-      .rm-mech-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-      .rm-mech-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(201,162,75,.14); color: var(--rm-gold-bright); display: flex; align-items: center; justify-content: center; }
-      .rm-mech-n { font-size: 2rem; font-weight: 700; color: rgba(201,162,75,.3); line-height: 1; }
-      .rm-mech-title { font-size: 1.22rem; font-weight: 700; color: #fff; margin: 0 0 4px; }
-      .rm-mech-tag { font-size: 13px; font-weight: 600; color: var(--rm-gold-bright); margin: 0 0 14px; }
-      .rm-mech-body { font-size: 14.5px; line-height: 1.65; color: rgba(255,255,255,.72); margin: 0; }
+      /* CTA band */
+      .rmx-ctaband { background: var(--bg2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .rmx-ctaband-inner { max-width: 1180px; margin: 0 auto; padding: 32px 40px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+      .rmx-ctaband-eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 11.5px; font-weight: 700; color: var(--gold-d); margin: 0 0 6px; }
+      .rmx-ctaband-title { font-size: clamp(19px, 2.2vw, 26px); font-weight: 700; letter-spacing: -.5px; color: var(--g); margin: 0; }
 
-      /* Before / After */
-      .rm-ba { position: relative; width: 100%; max-width: 900px; margin: 0 auto; aspect-ratio: 16/9; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.18); user-select: none; }
-      .rm-ba-after, .rm-ba-before { position: absolute; inset: 0; height: 100%; }
-      .rm-ba-after { background: linear-gradient(135deg, #1a2c46, #2b4a6f); }
-      .rm-ba-before { top: 0; left: 0; overflow: hidden; background: linear-gradient(135deg, #4a443c, #6b6253); border-right: 3px solid var(--rm-gold-bright); }
-      .rm-ba-tag { position: absolute; top: 16px; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
-      .rm-ba-tag-before { left: 16px; background: rgba(0,0,0,.5); color: #fff; }
-      .rm-ba-tag-after { right: 16px; background: var(--rm-gold-bright); color: #1a1306; }
-      .rm-ba-divider { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--rm-gold-bright); transform: translateX(-50%); pointer-events: none; }
-      .rm-ba-handle { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; background: var(--rm-gold-bright); color: #1a1306; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.3); }
-      .rm-ba-range { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+      /* Carousel */
+      .rmx-carousel { position: relative; max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+      .rmx-car-track { display: flex; gap: 20px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 18px; scrollbar-width: none; }
+      .rmx-car-track::-webkit-scrollbar { display: none; }
+      .rmx-vid { position: relative; flex: 0 0 300px; scroll-snap-align: start; aspect-ratio: 3/4; border-radius: 4px; overflow: hidden; cursor: pointer; border: none; padding: 0; background: linear-gradient(160deg, #1d3a35, #122b27); }
+      .rmx-vid-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .rmx-vid-shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(10,24,21,.85) 100%); }
+      .rmx-vid-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 58px; height: 58px; border-radius: 50%; background: rgba(200,177,119,.95); color: #20180a; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,.35); transition: transform .15s ease; }
+      .rmx-vid:hover .rmx-vid-play { transform: translate(-50%, -50%) scale(1.08); }
+      .rmx-vid-meta { position: absolute; left: 16px; bottom: 14px; display: flex; flex-direction: column; gap: 2px; text-align: left; z-index: 2; }
+      .rmx-vid-name { font-size: 17px; font-weight: 700; color: #fff; }
+      .rmx-vid-project { font-size: 12.5px; font-weight: 600; color: var(--gold); }
+      .rmx-car-arrow { position: absolute; top: calc(50% - 9px); transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--g); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.12); z-index: 3; transition: background .15s ease, color .15s ease; }
+      .rmx-car-arrow:hover { background: var(--g); color: #fff; }
+      .rmx-car-prev { left: -6px; }
+      .rmx-car-next { right: -6px; }
 
-      /* Transformation cards */
-      .rm-transform { background: #fff; border: 1px solid var(--rm-line); border-radius: 14px; padding: 28px 24px; text-align: center; }
-      .rm-transform-emoji { font-size: 2rem; margin-bottom: 12px; }
-      .rm-transform-title { font-size: 1.15rem; font-weight: 700; margin: 0 0 2px; color: var(--rm-text); }
-      .rm-transform-label { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--rm-muted); margin: 0 0 12px; }
-      .rm-transform-body { font-size: 14px; line-height: 1.6; color: var(--rm-muted); margin: 0 0 14px; }
-      .rm-transform-eta { font-size: 13px; font-weight: 600; color: #a9842f; margin: 0; }
+      /* Video / popup modals */
+      .rmx-modal, .rmx-popup, .rmx-lb { position: fixed; inset: 0; z-index: 120; background: rgba(10,18,16,.86); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; }
+      .rmx-modal-inner { position: relative; width: 100%; max-width: 460px; }
+      .rmx-modal-close, .rmx-popup-close { position: absolute; top: -46px; right: 0; width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center; }
+      .rmx-modal-video { position: relative; width: 100%; aspect-ratio: 9/16; max-height: 76vh; border-radius: 4px; overflow: hidden; background: #000; }
+      .rmx-modal-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+      .rmx-modal-cap { text-align: center; margin-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+      .rmx-modal-cap strong { color: #fff; } .rmx-modal-cap span { color: var(--gold); font-size: 13px; }
 
-      /* Quotes */
-      .rm-quote { margin: 48px auto 0; max-width: 760px; text-align: center; font-size: 1.18rem; line-height: 1.6; font-style: italic; color: var(--rm-text); border: none; padding: 0; }
-      .rm-quote cite { display: block; margin-top: 16px; font-size: 14px; font-style: normal; font-weight: 600; color: var(--rm-muted); }
-      .rm-quote-light { color: rgba(255,255,255,.92); }
-      .rm-quote-light cite { color: var(--rm-gold-bright); }
+      /* Popup */
+      .rmx-popup-inner { position: relative; width: 100%; max-width: 440px; max-height: 92vh; overflow-y: auto; }
+      .rmx-popup-close { top: 12px; right: 12px; background: rgba(255,255,255,.18); z-index: 2; }
 
-      /* Stats */
-      .rm-stat { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; padding: 28px 22px; text-align: center; }
-      .rm-stat-emoji { font-size: 1.5rem; margin-bottom: 10px; }
-      .rm-stat-value { font-size: 2.4rem; font-weight: 700; color: var(--rm-gold-bright); line-height: 1; }
-      .rm-stat-label { font-size: 14px; font-weight: 600; color: #fff; margin: 10px 0 10px; }
-      .rm-stat-note { font-size: 12.5px; line-height: 1.55; color: rgba(255,255,255,.6); margin: 0; }
+      /* How-we-work table */
+      .rmx-table { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+      .rmx-table-head { display: grid; grid-template-columns: .9fr 1.2fr 1.2fr; gap: 1px; background: rgba(255,255,255,.14); border-radius: 4px 4px 0 0; overflow: hidden; }
+      .rmx-table-head span { background: rgba(255,255,255,.06); padding: 14px 18px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.7); }
+      .rmx-table-head span:last-child { color: var(--gold); }
+      .rmx-table-row { display: grid; grid-template-columns: .9fr 1.2fr 1.2fr; gap: 1px; background: rgba(255,255,255,.1); }
+      .rmx-table-row > div { background: rgba(255,255,255,.04); padding: 18px; font-size: 14.5px; line-height: 1.55; display: flex; gap: 9px; }
+      .rmx-table-stage { flex-direction: column; gap: 4px !important; }
+      .rmx-table-stage b { color: var(--gold); font-size: 13px; }
+      .rmx-table-stage span { color: #fff; font-weight: 700; }
+      .rmx-table-usual { color: rgba(255,255,255,.62); }
+      .rmx-table-usual svg { color: #d98a7a; flex-shrink: 0; margin-top: 2px; }
+      .rmx-table-us { color: #fff; background: rgba(200,177,119,.1) !important; }
+      .rmx-table-us svg { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
 
-      /* Comparison table */
-      .rm-table { border: 1px solid var(--rm-line); border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 6px 26px rgba(0,0,0,.05); }
-      .rm-table-head, .rm-table-row { display: grid; grid-template-columns: 0.8fr 1.1fr 1.1fr; }
-      .rm-table-row { border-top: 1px solid var(--rm-line); }
-      .rm-table-cell { padding: 18px 20px; font-size: 14px; line-height: 1.55; display: flex; gap: 8px; align-items: flex-start; }
-      .rm-table-dim { font-weight: 700; color: var(--rm-text); background: #fafafa; align-items: center; }
-      .rm-table-industry-head, .rm-table-judah-head { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
-      .rm-table-industry-head { background: #f0f0f0; color: var(--rm-muted); }
-      .rm-table-judah-head { background: var(--rm-ink); color: var(--rm-gold-bright); }
-      .rm-table-industry { color: var(--rm-muted); }
-      .rm-table-judah { color: var(--rm-text); background: rgba(201,162,75,.05); }
-      .rm-x { color: #c0392b; flex-shrink: 0; margin-top: 2px; }
-      .rm-check { color: #1e8449; flex-shrink: 0; margin-top: 2px; }
-
-      /* Close */
-      .rm-close-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: start; }
-      .rm-guarantee { display: flex; gap: 16px; background: #fff; border: 1px solid var(--rm-line); border-left: 4px solid var(--rm-gold); border-radius: 12px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 6px 22px rgba(0,0,0,.05); }
-      .rm-guarantee-icon { color: var(--rm-gold); flex-shrink: 0; }
-      .rm-guarantee strong { display: block; font-size: 1.05rem; color: var(--rm-text); margin-bottom: 6px; }
-      .rm-guarantee p { font-size: 14px; line-height: 1.6; color: var(--rm-muted); margin: 0; }
-      .rm-softfall { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.6; color: var(--rm-muted); }
-      .rm-softfall svg { color: var(--rm-gold); flex-shrink: 0; margin-top: 2px; }
-      .rm-form-wrap { position: sticky; top: 88px; }
-
-      /* Project gallery */
-      .rm-gal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
-      .rm-gal-item {
-        position: relative; display: block; width: 100%; aspect-ratio: 4/3; padding: 0;
-        border: none; cursor: pointer; border-radius: 14px; overflow: hidden; background: #e9e7e2;
-        box-shadow: 0 6px 22px rgba(0,0,0,.08);
-      }
-      .rm-gal-img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; display: block; }
-      .rm-gal-item:hover .rm-gal-img { transform: scale(1.06); }
-      .rm-gal-overlay {
-        position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end;
-        gap: 6px; padding: 16px; text-align: left;
-        background: linear-gradient(180deg, transparent 45%, rgba(11,15,23,.82) 100%);
-        opacity: 0; transition: opacity .25s ease;
-      }
-      .rm-gal-item:hover .rm-gal-overlay { opacity: 1; }
-      .rm-gal-cat {
-        align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-        color: #1a1306; background: var(--rm-gold-bright); padding: 3px 9px; border-radius: 5px;
-      }
-      .rm-gal-cap { font-size: 14px; font-weight: 600; color: #fff; line-height: 1.35; }
+      /* Gallery */
+      .rmx-gal { max-width: 1280px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .rmx-gal-item { position: relative; aspect-ratio: 4/3; border: none; padding: 0; cursor: pointer; border-radius: 4px; overflow: hidden; background: #e9e7e2; }
+      .rmx-gal-item img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+      .rmx-gal-item:hover img { transform: scale(1.06); }
+      .rmx-gal-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; padding: 16px; text-align: left; background: linear-gradient(180deg, transparent 45%, rgba(15,53,47,.86) 100%); opacity: 0; transition: opacity .25s ease; }
+      .rmx-gal-item:hover .rmx-gal-overlay { opacity: 1; }
+      .rmx-gal-cat { align-self: flex-start; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #20180a; background: var(--gold); padding: 3px 9px; border-radius: 3px; }
+      .rmx-gal-cap { font-size: 14px; font-weight: 600; color: #fff; }
 
       /* Lightbox */
-      .rm-lb { position: fixed; inset: 0; z-index: 110; background: rgba(5,8,14,.92); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; animation: rmFade .2s ease; }
-      .rm-lb-close { position: absolute; top: 20px; right: 20px; width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; transition: background .15s ease; z-index: 2; }
-      .rm-lb-close:hover { background: rgba(255,255,255,.24); }
-      .rm-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; transition: background .15s ease; z-index: 2; }
-      .rm-lb-nav:hover { background: var(--rm-gold-bright); color: #1a1306; }
-      .rm-lb-prev { left: 16px; }
-      .rm-lb-next { right: 16px; }
-      .rm-lb-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 1100px; width: 100%; }
-      .rm-lb-img { max-width: 90vw; max-height: 80vh; width: auto; height: auto; object-fit: contain; border-radius: 12px; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
-      .rm-lb-caption { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; color: #fff; font-size: 15px; font-weight: 500; }
-      .rm-lb-count { color: rgba(255,255,255,.55); font-size: 13px; }
-
-      /* 2-column comparison table */
-      .rm-table-2-head, .rm-table-2-row { display: grid; grid-template-columns: 1fr 1fr; }
-      .rm-table-2-row { border-top: 1px solid var(--rm-line); }
-      .rm-table-typical-head { background: #f0f0f0; color: var(--rm-muted); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; }
-      .rm-diff-close { max-width: 760px; margin: 44px auto 0; text-align: center; }
-      .rm-diff-h3 { font-size: 1.3rem; font-weight: 700; color: var(--rm-text); margin: 28px 0 10px; }
-      .rm-diff-h3:first-child { margin-top: 0; }
-      .rm-diff-p { font-size: 1.05rem; line-height: 1.65; color: var(--rm-muted); margin: 0; }
-
-      /* Video testimonials */
-      .rm-section-vids { background: linear-gradient(180deg, var(--rm-ink) 0%, #11192b 100%); }
-      .rm-vid-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 8px; }
-      .rm-vid-card {
-        position: relative; display: flex; flex-direction: column; justify-content: flex-end;
-        aspect-ratio: 4/5; border: 1px solid rgba(201,162,75,.22); border-radius: 16px;
-        padding: 22px; cursor: pointer; overflow: hidden; text-align: left;
-        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-      }
-      .rm-vid-card:hover { transform: translateY(-4px); border-color: rgba(201,162,75,.55); box-shadow: 0 16px 40px rgba(0,0,0,.4); }
-      .rm-vid-tone-0 { background: linear-gradient(150deg, #1a2c46, #0d1b2a); }
-      .rm-vid-tone-1 { background: linear-gradient(150deg, #2b3a2e, #14201a); }
-      .rm-vid-tone-2 { background: linear-gradient(150deg, #3a2c1a, #1f1710); }
-      .rm-vid-tone-3 { background: linear-gradient(150deg, #2b2440, #161023); }
-      .rm-vid-tone-4 { background: linear-gradient(150deg, #143038, #0a191d); }
-      .rm-vid-tone-5 { background: linear-gradient(150deg, #3a1f2a, #1f1016); }
-      .rm-vid-quote { position: absolute; top: 20px; left: 20px; color: rgba(201,162,75,.4); }
-      .rm-vid-avatar {
-        position: absolute; top: 18px; right: 20px; width: 46px; height: 46px; border-radius: 50%;
-        background: rgba(201,162,75,.16); color: var(--rm-gold-bright); border: 1px solid rgba(201,162,75,.4);
-        display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;
-      }
-      .rm-vid-play {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        width: 60px; height: 60px; border-radius: 50%;
-        background: var(--rm-gold-bright); color: #1a1306;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 6px 22px rgba(201,162,75,.5); transition: transform .18s ease;
-      }
-      .rm-vid-card:hover .rm-vid-play { transform: translate(-50%, -50%) scale(1.08); }
-      .rm-vid-meta { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 3px; }
-      .rm-vid-name { font-size: 1.1rem; font-weight: 700; color: #fff; }
-      .rm-vid-project { font-size: 12.5px; font-weight: 500; color: var(--rm-gold-bright); letter-spacing: .02em; }
-
-      /* Video modal */
-      .rm-modal { position: fixed; inset: 0; z-index: 100; background: rgba(5,8,14,.86); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 24px; animation: rmFade .2s ease; }
-      @keyframes rmFade { from { opacity: 0; } to { opacity: 1; } }
-      .rm-modal-inner { position: relative; width: 100%; max-width: 520px; }
-      .rm-modal-close { position: absolute; top: -46px; right: 0; width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.12); color: #fff; display: flex; align-items: center; justify-content: center; transition: background .15s ease; }
-      .rm-modal-close:hover { background: rgba(255,255,255,.24); }
-      .rm-modal-video { position: relative; width: 100%; aspect-ratio: 9/16; max-height: 78vh; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
-      .rm-modal-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-      .rm-modal-caption { display: flex; flex-direction: column; gap: 2px; text-align: center; margin-top: 16px; }
-      .rm-modal-caption strong { color: #fff; font-size: 1.05rem; }
-      .rm-modal-caption span { color: var(--rm-gold-bright); font-size: 13px; }
+      .rmx-lb-close { position: absolute; top: 20px; right: 20px; width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
+      .rmx-lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
+      .rmx-lb-nav:hover { background: var(--gold); color: #20180a; }
+      .rmx-lb-prev { left: 16px; } .rmx-lb-next { right: 16px; }
+      .rmx-lb-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 1100px; }
+      .rmx-lb-stage img { max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 4px; box-shadow: 0 24px 70px rgba(0,0,0,.6); }
+      .rmx-lb-cap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; color: #fff; font-size: 15px; font-weight: 500; }
+      .rmx-lb-count { color: rgba(255,255,255,.55); font-size: 13px; }
 
       /* Footer */
-      .rm-footer { background: var(--rm-ink); color: rgba(255,255,255,.6); padding: 36px 0; text-align: center; }
-      .rm-footer p { margin: 0; font-size: 13px; }
-      .rm-footer-sub { margin-top: 8px; font-size: 11.5px; color: rgba(255,255,255,.4); max-width: 680px; margin-left: auto; margin-right: auto; }
+      .rmx-footer { background: var(--g-deep); color: rgba(255,255,255,.72); padding: 40px 0; }
+      .rmx-footer-inner { max-width: 1180px; margin: 0 auto; padding: 0 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+      .rmx-footer-logo { height: 46px; width: auto; filter: brightness(0) invert(1); opacity: .9; }
+      .rmx-footer-nav { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+      .rmx-footer-nav a, .rmx-footer-nav button { color: rgba(255,255,255,.8); text-decoration: none; font-size: 14px; background: none; border: none; cursor: pointer; }
+      .rmx-footer-nav a:hover, .rmx-footer-nav button:hover { color: var(--gold); }
+      .rmx-footer-fine { font-size: 13px; color: rgba(255,255,255,.5); margin: 0; }
 
       /* Responsive */
-      @media (max-width: 900px) {
-        .rm-grid-3, .rm-grid-2, .rm-grid-4 { grid-template-columns: 1fr; }
-        .rm-vid-grid { grid-template-columns: repeat(2, 1fr); }
-        .rm-gal-grid { grid-template-columns: repeat(2, 1fr); }
-        .rm-gal-overlay { opacity: 1; }
-        .rm-close-grid { grid-template-columns: 1fr; gap: 40px; }
-        .rm-form-wrap { position: static; }
-        .rm-table-head { display: none; }
-        .rm-table-row { grid-template-columns: 1fr; }
-        .rm-table-cell { border-top: 1px solid var(--rm-line); }
-        .rm-table-row:first-child .rm-table-cell:first-child { border-top: none; }
-        .rm-table-2-head { display: none; }
-        .rm-table-2-row { grid-template-columns: 1fr; }
-        .rm-table-2-row:first-child .rm-table-cell:first-child { border-top: none; }
+      @media (max-width: 1100px) {
+        .rmx-hero-inner { grid-template-columns: 1fr; padding: 48px 40px; gap: 36px; }
+        .rmx-hero-copy { max-width: 640px; }
+        .rmx-hero-form { max-width: 460px; }
+      }
+      @media (max-width: 980px) {
+        .rmx-gal { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (max-width: 820px) {
+        .rmx-nav, .rmx-header-cta { display: none; }
+        .rmx-burger { display: flex; }
+        .rmx-header-inner { padding: 0 24px; }
+        .rmx-mobile-nav { display: flex; flex-direction: column; gap: 4px; padding: 12px 24px 20px; background: #fff; border-bottom: 1px solid var(--line); }
+        .rmx-mobile-nav a { padding: 11px 4px; color: var(--ink); text-decoration: none; font-weight: 600; border-bottom: 1px solid var(--line); }
+        .rmx-mobile-nav .rmx-btn { margin-top: 10px; }
+        .rmx-hero-overlay { background: linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.92) 60%, rgba(255,255,255,.9) 100%); }
+        .rmx-ctaband-inner { flex-direction: column; align-items: flex-start; gap: 18px; }
+        .rmx-table-head { display: none; }
+        .rmx-table-row { grid-template-columns: 1fr; gap: 0; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
       }
       @media (max-width: 560px) {
-        .rm-topbar-cta { display: none; }
-        .rm-hero-badges { gap: 14px; }
-        .rm-vid-grid { grid-template-columns: 1fr; }
-        .rm-gal-grid { grid-template-columns: 1fr; }
-        .rm-lb-nav { width: 40px; height: 40px; }
+        .rmx-hero-inner { padding: 36px 22px; }
+        .rmx-h1 { letter-spacing: -1px; }
+        .rmx-form { padding: 26px 22px; }
+        .rmx-checks { grid-template-columns: 1fr; }
+        .rmx-gal { grid-template-columns: 1fr; }
+        .rmx-vid { flex-basis: 78vw; }
+        .rmx-car-prev { left: 2px; } .rmx-car-next { right: 2px; }
       }
     `}</style>
   )
